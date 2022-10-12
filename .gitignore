@@ -7,6 +7,7 @@
 
 # User-specific files
 .Ruserdata
+FPA_FOD_20210617.sqlite
 
 # Example code in package build process
 *-Ex.R
