@@ -5,7 +5,7 @@ date: "11/4/2021"
 output: 
   github_document:
     toc: TRUE
-    toc_depth: 3
+    toc_depth: 10
     number_sections: TRUE
 editor_options: 
   chunk_output_type: inline
@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
   fig.align = "center")
 ```
 
-## Wildfire Data Source Abstract
+# Wildfire Data Source Abstract
 
 The data publication contains a spatial database of wildfires that occurred in the United States from 1992 to 2018. It is the fourth update of a publication originally generated to support the national Fire Program Analysis (FPA) system. The wildfire records were acquired from the reporting systems of federal, state, and local fire organizations. The following core data elements were required for records to be included in this data publication: discovery date, final fire size, and a point location at least as precise as a Public Land Survey System (PLSS) section (1-square mile grid). The data were transformed to conform, when possible, to the data standards of the National Wildfire Coordinating Group (NWCG), including an updated wildfire-cause standard (approved August 2020). Basic error-checking was performed and redundant records were identified and removed, to the degree possible. In addition to incorporating data for 2016-2018, some previously unavailable nonfederal wildfire records for the period 1999-2015 were acquired either directly from the state fire services (NH, NJ) or indirectly from an updated National Association of State Foresters database (AR, AZ, CA, CO, FL, HI, ID, IL, OK, SD) and added. The resulting product, referred to as the Fire Program Analysis fire-occurrence database (FPA FOD), includes 2.17 million geo-referenced wildfire records, representing a total of 165 million acres burned during the 27-year period.
 (<https://www.fs.usda.gov/rds/archive/Catalog/RDS-2013-0009.5>)
@@ -43,6 +43,7 @@ install.packages("viridis") #for color scale
 install.packages("hrbrthemes") #themes for ggplot2
 ``` -->
 
+# Load Packages
 ```{r, libraries, message = FALSE, tidy='styler', tidy.opts=list(strict=FALSE)}
 library(RSQLite) #for connecting to SQLite database
 library(dbplyr) #for connecting to database
@@ -63,7 +64,7 @@ library(hrbrthemes) #themes for ggplot2
 import_roboto_condensed() #for font
 ```
 
-## Load Wildfire Data from SQLite into Dataframe
+# Load Wildfire Data from SQLite into Dataframe
 
 ```{r, loading-wildfires, tidy='styler', tidy.opts=list(strict=FALSE)}
 
@@ -80,6 +81,8 @@ print(object.size(fires), units = "Gb")
 dbDisconnect(conn)
 ```
 
+# Count of NAs
+
 ```{r, na-count, tidy='styler', tidy.opts=list(strict=FALSE)}
 glimpse(fires)
 head(fires, n = 20L)
@@ -88,7 +91,7 @@ fires_na_count <- data.frame(fires_na_count)
 fires_na_count
 ```
 
-## Transform fires
+# Transform fires
 
 ```{r, transform, tidy='styler', tidy.opts=list(strict=FALSE)}
 # select columns we plan on using.
@@ -251,7 +254,7 @@ glimpse(fires_new)
 
 ```
 
-## Create subsets (CA, West, East)
+# Create subsets (CA, West, East)
 
 ```{r, create-subsets, tidy='styler', tidy.opts=list(strict=FALSE)}
 # create CA df
@@ -275,7 +278,7 @@ fires_new_east <- subset(fires_new, REGION =="East")
 glimpse(fires_new_east)
 ```
 
-## Import US (48 states) Drought Indicator Data (5 year SPEI) 1992 - 2020 from CSV
+# Import US (48 states) Drought Indicator Data (5 year SPEI) 1992 - 2020 from CSV
 
 ```{r, import-drought-us, tidy='styler', tidy.opts=list(strict=FALSE)}
 us_SPEI <- read.csv('drought_fig-2_US5SPEI.csv')
@@ -289,7 +292,7 @@ us_SPEI <- rename(us_SPEI, US_5yr_SPEI = Five.year.SPEI.value)
 glimpse(us_SPEI)
 ```
 
-## Import CA Drought Indicator Data (5 year SPEI) 1992 - 2021 from CSV
+# Import CA Drought Indicator Data (5 year SPEI) 1992 - 2021 from CSV
 
 ```{r, import-drought-ca, tidy='styler', tidy.opts=list(strict=FALSE)}
 ca_SPEI <- read.csv('CA_5SPEI.csv')
@@ -303,7 +306,7 @@ glimpse(ca_SPEI)
 
 ```
 
-## Combine SPEI dataframes
+# Combine SPEI dataframes
 
 ```{r, combine-spei, tidy='styler', tidy.opts=list(strict=FALSE)}
 combined_SPEI <- merge(us_SPEI, ca_SPEI, by = "Year", all = TRUE)
@@ -333,7 +336,7 @@ ggp
 # ggp + facet_grid(Group ~ .)
 ```
 
-## Summarise datasets
+# Summarise datasets
 
 ```{r, summarise-data, tidy='styler', tidy.opts=list(strict=FALSE)}
 summary(fires_new) #discovered DAY_TO_CONT outliers and then found containment dates in the future so went back to transformation step to replace them with NA
@@ -341,7 +344,7 @@ summary(combined_SPEI)
 summary(combined_SPEI_group)
 ```
 
-## Descriptive Statistics
+# Descriptive Statistics
 
 ```{r, descriptive-stats, tidy='styler', tidy.opts=list(strict=FALSE)}
 attach(fires_new)
@@ -355,7 +358,7 @@ combined_SPEI_num <- cbind(US_5yr_SPEI, CA_5yr_SPEI)
 stat.desc(combined_SPEI_num)
 ```
 
-### Histograms
+## Histograms
 
 ```{r, histograms, tidy='styler', tidy.opts=list(strict=FALSE)}
 # Histograms
@@ -442,7 +445,7 @@ ggplot(data = fires_new_east, aes(x = DAYS_TO_CONT)) + geom_histogram(bins=10) +
 
 
 ```
-### Boxplots
+## Boxplots
 
 ```{r, boxplots, tidy='styler', tidy.opts=list(strict=FALSE)}
 # Boxplots Fire Size, Days to Containment and SPEI, US and CA
@@ -503,7 +506,7 @@ location_spei_xlab <- paste(levels(combined_SPEI_group$Location),"\n(N=",table(c
 box_SPEI_group <- ggplot(combined_SPEI_group, aes(Location, SPEI)) + stat_boxplot(geom ='errorbar', width = 0.2) + geom_boxplot(notch=TRUE, varwidth = TRUE, outlier.shape = NA) + stat_summary(fun=mean, geom="point", shape=23, size=3) + scale_x_discrete(labels=location_spei_xlab) + geom_jitter(width = 0.2) + ggtitle("SPEI by Location") + theme(legend.position="none", plot.title = element_text(size=22))
 box_SPEI_group
 ```
-## Visualizations
+# Visualizations
 ```{r, visualizations, tidy='styler', tidy.opts=list(strict=FALSE)}
 glimpse(fires_new)
 
@@ -718,7 +721,7 @@ fires_new_east %>%
   axis.text.y = element_text(size = 14))
 
 ```
-## Correlation Matrix Numeric Attributes
+# Correlation Matrix Numeric Attributes
 
 ```{r, correlation-matrix-attributes, tidy='styler', tidy.opts=list(strict=FALSE)}
 # US fires
@@ -757,6 +760,8 @@ ggcorrplot(r,
 hc.order = TRUE,
 type = "lower", lab = TRUE)
 ```
+# Linear Regression
+
 ## Fire size and SPEI Linear Regression
 ```{r, fire-size-spei-linear-regression, tidy='styler', tidy.opts=list(strict=FALSE)}
 # CA FIRE_SIZE & SPEI
@@ -919,7 +924,7 @@ print(XCA_NUM_LARGE_FIRES)
 print(XCA_PCT_LARGE_FIRES)
 
 ```
-## CA AVG_FIRE_SIZE Prediction
+# CA AVG_FIRE_SIZE Prediction
 ```{r, fire-size-prediction, tidy='styler', tidy.opts=list(strict=FALSE)}
 # Use 2019 - 2021 ca_SPEI values to predict avg fire size
 ca_fs_spei
