@@ -3,41 +3,46 @@ US Wildfires and Drought
 Richard Railton
 11/4/2021
 
-- <a href="#01-wildfire-data-source-abstract"
-  id="toc-01-wildfire-data-source-abstract">0.1 Wildfire Data Source
+- <a href="#1-wildfire-data-source-abstract"
+  id="toc-1-wildfire-data-source-abstract">1 Wildfire Data Source
   Abstract</a>
-- <a href="#02-load-wildfire-data-from-sqlite-into-dataframe"
-  id="toc-02-load-wildfire-data-from-sqlite-into-dataframe">0.2 Load
-  Wildfire Data from SQLite into Dataframe</a>
-- <a href="#03-transform-fires" id="toc-03-transform-fires">0.3 Transform
+- <a href="#2-load-packages" id="toc-2-load-packages">2 Load Packages</a>
+- <a href="#3-load-wildfire-data-from-sqlite-into-dataframe"
+  id="toc-3-load-wildfire-data-from-sqlite-into-dataframe">3 Load Wildfire
+  Data from SQLite into Dataframe</a>
+- <a href="#4-count-of-nas" id="toc-4-count-of-nas">4 Count of NAs</a>
+- <a href="#5-transform-fires" id="toc-5-transform-fires">5 Transform
   fires</a>
-- <a href="#04-create-subsets-ca-west-east"
-  id="toc-04-create-subsets-ca-west-east">0.4 Create subsets (CA, West,
+- <a href="#6-create-subsets-ca-west-east"
+  id="toc-6-create-subsets-ca-west-east">6 Create subsets (CA, West,
   East)</a>
 - <a
-  href="#05-import-us-48-states-drought-indicator-data-5-year-spei-1992---2020-from-csv"
-  id="toc-05-import-us-48-states-drought-indicator-data-5-year-spei-1992---2020-from-csv">0.5
+  href="#7-import-us-48-states-drought-indicator-data-5-year-spei-1992---2020-from-csv"
+  id="toc-7-import-us-48-states-drought-indicator-data-5-year-spei-1992---2020-from-csv">7
   Import US (48 states) Drought Indicator Data (5 year SPEI) 1992 - 2020
   from CSV</a>
 - <a
-  href="#06-import-ca-drought-indicator-data-5-year-spei-1992---2021-from-csv"
-  id="toc-06-import-ca-drought-indicator-data-5-year-spei-1992---2021-from-csv">0.6
+  href="#8-import-ca-drought-indicator-data-5-year-spei-1992---2021-from-csv"
+  id="toc-8-import-ca-drought-indicator-data-5-year-spei-1992---2021-from-csv">8
   Import CA Drought Indicator Data (5 year SPEI) 1992 - 2021 from CSV</a>
-- <a href="#07-combine-spei-dataframes"
-  id="toc-07-combine-spei-dataframes">0.7 Combine SPEI dataframes</a>
-- <a href="#08-summarise-datasets" id="toc-08-summarise-datasets">0.8
+- <a href="#9-combine-spei-dataframes"
+  id="toc-9-combine-spei-dataframes">9 Combine SPEI dataframes</a>
+- <a href="#10-summarise-datasets" id="toc-10-summarise-datasets">10
   Summarise datasets</a>
-- <a href="#09-descriptive-statistics"
-  id="toc-09-descriptive-statistics">0.9 Descriptive Statistics</a>
-  - <a href="#091-histograms" id="toc-091-histograms">0.9.1 Histograms</a>
-- <a href="#010-fire-frequency-and-spei-linear-regression"
-  id="toc-010-fire-frequency-and-spei-linear-regression">0.10 Fire
-  frequency and SPEI Linear Regression</a>
-- <a href="#011-ca-avg_fire_size-prediction"
-  id="toc-011-ca-avg_fire_size-prediction">0.11 CA AVG_FIRE_SIZE
+- <a href="#11-descriptive-statistics"
+  id="toc-11-descriptive-statistics">11 Descriptive Statistics</a>
+  - <a href="#111-histograms" id="toc-111-histograms">11.1 Histograms</a>
+  - <a href="#112-fire-size-and-spei-linear-regression"
+    id="toc-112-fire-size-and-spei-linear-regression">11.2 Fire size and
+    SPEI Linear Regression</a>
+  - <a href="#113-fire-frequency-and-spei-linear-regression"
+    id="toc-113-fire-frequency-and-spei-linear-regression">11.3 Fire
+    frequency and SPEI Linear Regression</a>
+- <a href="#12-ca-avg_fire_size-prediction"
+  id="toc-12-ca-avg_fire_size-prediction">12 CA AVG_FIRE_SIZE
   Prediction</a>
 
-## 0.1 Wildfire Data Source Abstract
+# 1 Wildfire Data Source Abstract
 
 The data publication contains a spatial database of wildfires that
 occurred in the United States from 1992 to 2018. It is the fourth update
@@ -81,6 +86,8 @@ install.packages("viridis") #for color scale
 install.packages("hrbrthemes") #themes for ggplot2
 ``` -->
 
+# 2 Load Packages
+
 ``` r
 library(RSQLite) # for connecting to SQLite database
 library(dbplyr) # for connecting to database
@@ -101,7 +108,7 @@ library(hrbrthemes) # themes for ggplot2
 import_roboto_condensed() # for font
 ```
 
-## 0.2 Load Wildfire Data from SQLite into Dataframe
+# 3 Load Wildfire Data from SQLite into Dataframe
 
 ``` r
 # create db connection
@@ -120,6 +127,8 @@ print(object.size(fires), units = "Gb")
 # disconnect from db
 dbDisconnect(conn)
 ```
+
+# 4 Count of NAs
 
 ``` r
 glimpse(fires)
@@ -245,7 +254,7 @@ fires_na_count
     ## FIPS_CODE                             657235
     ## FIPS_NAME                             657236
 
-## 0.3 Transform fires
+# 5 Transform fires
 
 ``` r
 # select columns we plan on using.
@@ -865,7 +874,7 @@ glimpse(fires_new)
     ## $ REGION                    <fct> West, West, West, West, West, West, West, We…
     ## $ DAYS_TO_CONT              <dbl> 0, 0, 0, 5, 5, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0,…
 
-## 0.4 Create subsets (CA, West, East)
+# 6 Create subsets (CA, West, East)
 
 ``` r
 # create CA df
@@ -978,7 +987,7 @@ glimpse(fires_new_east)
     ## $ REGION                    <fct> East, East, East, East, East, East, East, Ea…
     ## $ DAYS_TO_CONT              <dbl> 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,…
 
-## 0.5 Import US (48 states) Drought Indicator Data (5 year SPEI) 1992 - 2020 from CSV
+# 7 Import US (48 states) Drought Indicator Data (5 year SPEI) 1992 - 2020 from CSV
 
 ``` r
 us_SPEI <- read.csv("drought_fig-2_US5SPEI.csv")
@@ -1011,7 +1020,7 @@ glimpse(us_SPEI)
     ## $ Year        <fct> 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001…
     ## $ US_5yr_SPEI <dbl> -0.29736869, 0.32903045, 0.44245068, 0.74043491, 0.7170902…
 
-## 0.6 Import CA Drought Indicator Data (5 year SPEI) 1992 - 2021 from CSV
+# 8 Import CA Drought Indicator Data (5 year SPEI) 1992 - 2021 from CSV
 
 ``` r
 ca_SPEI <- read.csv("CA_5SPEI.csv")
@@ -1043,7 +1052,7 @@ glimpse(ca_SPEI)
     ## $ Year        <fct> 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001…
     ## $ CA_5yr_SPEI <dbl> -1.19, -0.52, -0.81, 0.28, 0.36, 0.60, 0.96, 1.25, 0.67, 0…
 
-## 0.7 Combine SPEI dataframes
+# 9 Combine SPEI dataframes
 
 ``` r
 combined_SPEI <- merge(us_SPEI, ca_SPEI, by = "Year", all = TRUE)
@@ -1161,7 +1170,7 @@ ggp
 # ggp + facet_grid(Group ~ .)
 ```
 
-## 0.8 Summarise datasets
+# 10 Summarise datasets
 
 ``` r
 summary(fires_new) # discovered DAY_TO_CONT outliers and then found containment dates in the future so went back to transformation step to replace them with NA
@@ -1242,7 +1251,7 @@ summary(combined_SPEI_group)
     ##  1997   : 2   Max.   : 1.2500                   
     ##  (Other):48   NA's   :1
 
-## 0.9 Descriptive Statistics
+# 11 Descriptive Statistics
 
 ``` r
 attach(fires_new)
@@ -1290,7 +1299,7 @@ stat.desc(combined_SPEI_num)
     ## std.dev            0.522        0.77
     ## coef.var           2.697       -1.55
 
-### 0.9.1 Histograms
+## 11.1 Histograms
 
 ``` r
 # Histograms
@@ -1405,7 +1414,7 @@ ggplot(data = fires_new_east, aes(x = DAYS_TO_CONT)) + geom_histogram(bins = 10)
 ```
 
 <img src="us-wildfires-and-drought_files/figure-gfm/histograms-8.png" style="display: block; margin: auto;" />
-\### Boxplots
+\## Boxplots
 
 ``` r
 # Boxplots Fire Size, Days to Containment and SPEI, US and CA
@@ -1499,7 +1508,7 @@ box_SPEI_group
 ```
 
 <img src="us-wildfires-and-drought_files/figure-gfm/boxplots-9.png" style="display: block; margin: auto;" />
-\## Visualizations
+\# Visualizations
 
 ``` r
 glimpse(fires_new)
@@ -1797,7 +1806,7 @@ fires_new_east %>%
 ```
 
 <img src="us-wildfires-and-drought_files/figure-gfm/fire-causes-12.png" style="display: block; margin: auto;" />
-\## Correlation Matrix Numeric Attributes
+\# Correlation Matrix Numeric Attributes
 
 ``` r
 # US fires
@@ -1922,7 +1931,9 @@ ggcorrplot(r,
 ```
 
 <img src="us-wildfires-and-drought_files/figure-gfm/correlation-matrix-attributes-4.png" style="display: block; margin: auto;" />
-\## Fire size and SPEI Linear Regression
+\# Linear Regression
+
+## 11.2 Fire size and SPEI Linear Regression
 
 ``` r
 # CA FIRE_SIZE & SPEI
@@ -2127,7 +2138,7 @@ ggplotRegression(fit2)
 # normalization gives same result
 ```
 
-## 0.10 Fire frequency and SPEI Linear Regression
+## 11.3 Fire frequency and SPEI Linear Regression
 
 ``` r
 # CA FIRE_FREQ & SPEI
@@ -2681,7 +2692,7 @@ print(XCA_PCT_LARGE_FIRES)
     ## CA_PCT_LARGE_FIRES 
     ##                -22
 
-## 0.11 CA AVG_FIRE_SIZE Prediction
+# 12 CA AVG_FIRE_SIZE Prediction
 
 ``` r
 # Use 2019 - 2021 ca_SPEI values to predict avg fire size
