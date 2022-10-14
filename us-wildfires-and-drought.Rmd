@@ -1,0 +1,949 @@
+---
+title: "US Wildfires and Drought"
+author: "Richard Railton"
+date: "11/4/2021"
+output: 
+  html_document:
+    keep_md: true
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  fig.align = "center")
+```
+
+## Drought Data Source Abstract
+
+This data publication contains a spatial database of wildfires that occurred in the United States from 1992 to 2018. It is the fourth update of a publication originally generated to support the national Fire Program Analysis (FPA) system. The wildfire records were acquired from the reporting systems of federal, state, and local fire organizations. The following core data elements were required for records to be included in this data publication: discovery date, final fire size, and a point location at least as precise as a Public Land Survey System (PLSS) section (1-square mile grid). The data were transformed to conform, when possible, to the data standards of the National Wildfire Coordinating Group (NWCG), including an updated wildfire-cause standard (approved August 2020). Basic error-checking was performed and redundant records were identified and removed, to the degree possible. In addition to incorporating data for 2016-2018, some previously unavailable nonfederal wildfire records for the period 1999-2015 were acquired either directly from the state fire services (NH, NJ) or indirectly from an updated National Association of State Foresters database (AR, AZ, CA, CO, FL, HI, ID, IL, OK, SD) and added. The resulting product, referred to as the Fire Program Analysis fire-occurrence database (FPA FOD), includes 2.17 million geo-referenced wildfire records, representing a total of 165 million acres burned during the 27-year period.
+(<https://www.fs.usda.gov/rds/archive/Catalog/RDS-2013-0009.5>)
+
+## The following is an analysis of the data from the above source
+
+<!-- ```{r, tidy=TRUE, tidy.opts=list(width.cutoff=80)}
+install.packages("RSQLite") #for connecting to SQLite database
+install.packages("dbplyr") #for connecting to database
+install.packages("dplyr") #for data manipulation
+install.packages("tidyr") #for tidying data
+install.packages("ggthemes") #for visual themes
+install.packages("lubridate") #for date conversion
+install.packages("chron") #for time conversion
+install.packages("magrittr") #call and update with %<>%
+install.packages("pastecs") #descriptive stats
+install.packages("ggplot2") #for visuals
+install.packages("mosaicData") #for correlation matrix
+install.packages("ggcorrplot") #for linear regression
+install.packages("scales") #for normalizing
+install.packages("ggpubr") #for ggarrange
+install.packages("viridis") #for color scale
+install.packages("hrbrthemes") #themes for ggplot2
+``` -->
+
+```{r, message = FALSE, tidy=TRUE, tidy.opts=list(width.cutoff=80)}
+#the analysis uses the following packages:
+library(RSQLite) #for connecting to SQLite database
+library(dbplyr) #for connecting to database
+library(dplyr) #for data manipulation
+library(tidyr) #for tidying data
+library(ggthemes) #for visual themes
+library(lubridate) #for date conversion
+library(chron) #for time conversion
+library(magrittr) #call and update with %<>%
+library(pastecs) #descriptive stats
+library(ggplot2) #for visuals
+library(mosaicData) #for correlation matrix
+library(ggcorrplot) #for linear regression
+library(scales) #for normalizing
+library(ggpubr) #for ggarrange
+library(viridis) #for color scale
+library(hrbrthemes) #themes for ggplot2
+import_roboto_condensed() #for font
+```
+
+## Load Wildfire Data from SQLite into Dataframe
+
+```{r, tidy=TRUE, tidy.opts=list(width.cutoff=80)}
+
+# create db connection
+conn <- dbConnect(SQLite(), "FPA_FOD_20210617.sqlite")
+
+# pull the fires table into RAM
+fires <- tbl(conn, "Fires") %>% collect()
+
+# check size
+print(object.size(fires), units = "Gb")
+
+# disconnect from db
+dbDisconnect(conn)
+```
+
+```{r, tidy=TRUE, tidy.opts=list(width.cutoff=80)}
+glimpse(fires)
+head(fires, n = 20L)
+fires_na_count <- sapply(fires, function(y) sum(length(which(is.na(y)))))
+fires_na_count <- data.frame(fires_na_count)
+fires_na_count
+```
+
+## Transform fires
+
+```{r, tidy=TRUE, tidy.opts=list(width.cutoff=80)}
+# select columns we plan on using.
+fires_new <- fires %>% select(FOD_ID, FIRE_YEAR, DISCOVERY_DATE, DISCOVERY_DOY, DISCOVERY_TIME, NWCG_CAUSE_CLASSIFICATION, NWCG_GENERAL_CAUSE, CONT_DATE, CONT_DOY, CONT_TIME, FIRE_SIZE, FIRE_SIZE_CLASS, LATITUDE, LONGITUDE, STATE, FIPS_NAME)
+
+# rename column
+fires_new <- rename(fires_new, COUNTY = FIPS_NAME)
+glimpse(fires_new)
+
+# convert dates
+fires_new$DISCOVERY_DATE <-as.Date(fires_new$DISCOVERY_DATE, format =  "%m/%d/%Y %H:%M")
+fires_new$CONT_DATE <-as.Date(fires_new$CONT_DATE, format =  "%m/%d/%Y %H:%M")
+
+# convert times
+fires_new$DISCOVERY_TIME <- times(sub("(.{2})", "\\1:", sprintf("%04d:00", fires_new$DISCOVERY_TIME)))
+fires_new$CONT_TIME <- times(sub("(.{2})", "\\1:", sprintf("%04d:00", fires_new$CONT_TIME)))
+
+# convert ID to chr
+fires_new %<>% mutate_at("FOD_ID", as.character)
+
+# check list of states in data
+unique_states <- unique(fires_new$STATE)
+unique_states
+
+# created a list of (east/west) regions by state in csv for contiguous 48 states to join to fires_new
+regions <- read.csv('regions.csv')
+
+# merge regions
+fires_new <- left_join(fires_new, regions, by = c("STATE" = "STATE"))
+
+# remove na in REGION since I'm only interested in contiguous US
+fires_new <- fires_new[!is.na(fires_new$REGION), ]
+
+# check na count
+fires_new_na_count <- sapply(fires_new, function(y) sum(length(which(is.na(y)))))
+fires_new_na_count <- data.frame(fires_new_na_count)
+fires_new_na_count
+
+glimpse(fires_new)
+
+# check FOD_ID is unique using unique_id function from https://rdrr.io/github/EdwinTh/thatssorandom/src/R/unique_id.R
+unique_id <- function(x, ...) {
+  id_set <- x %>% select(...)
+  id_set_dist <- id_set %>% distinct
+  if (nrow(id_set) == nrow(id_set_dist)) {
+    TRUE
+  } else {
+    non_unique_ids <- id_set %>%
+      filter(id_set %>% duplicated()) %>%
+      distinct()
+    suppressMessages(
+      inner_join(non_unique_ids, x) %>% arrange(...)
+    )
+  }
+}
+fires_new %>% unique_id(FOD_ID)
+glimpse(fires_new)
+
+# convert categorical variables to factors.
+factor_cols <- c("FIRE_YEAR", "DISCOVERY_DOY", "NWCG_CAUSE_CLASSIFICATION", "NWCG_GENERAL_CAUSE", "CONT_DOY", "FIRE_SIZE_CLASS", "STATE", "COUNTY", "REGION")
+fires_new %<>% mutate_at(factor_cols, factor)
+levels(fires_new$NWCG_CAUSE_CLASSIFICATION)
+levels(fires_new$NWCG_GENERAL_CAUSE)
+
+# sum number of special values
+is.special <- function(x){
+  if (is.numeric(x)) !is.finite(x) else is.na(x)
+}
+sum(sapply(fires_new, is.special))
+
+# check na count
+fires_new_na_count <- sapply(fires_new, function(y) sum(length(which(is.na(y)))))
+fires_new_na_count <- data.frame(fires_new_na_count)
+print(fires_new_na_count)
+
+# create subset cause_class where na
+cause_class_na <- fires_new[is.na(fires_new$NWCG_CAUSE_CLASSIFICATION), ]
+cause_class_na
+
+# subset all general_cause with missing data
+general_cause_missing <-fires_new[which(fires_new$NWCG_GENERAL_CAUSE == 'Missing data/not specified/undetermined'), ]
+general_cause_missing
+
+# subset all cause_class with missing data
+cause_class_missing <-fires_new[which(fires_new$NWCG_CAUSE_CLASSIFICATION == 'Missing data/not specified/undetermined'), ]
+cause_class_missing
+
+# replace na in NWCG_CAUSE_CLASSIFICATION
+fires_new$NWCG_CAUSE_CLASSIFICATION[is.na(fires_new$NWCG_CAUSE_CLASSIFICATION)] <- 'Missing data/not specified/undetermined'
+
+# outliers in cont_date
+dtc_large_values <- fires_new[which(fires_new$DAYS_TO_CONT > 9490), ]
+dtc_large_values 
+
+cont_future_dates <- fires_new[which(fires_new$CONT_DATE > today()), ]
+cont_future_dates 
+
+# replace future cont_date with na
+fires_new$CONT_DATE[fires_new$CONT_DATE > today()] <- NA
+
+# create new column discovery to containment days
+fires_new$DAYS_TO_CONT <- as.numeric(difftime(fires_new$CONT_DATE, fires_new$DISCOVERY_DATE), units="days")
+
+# outliers in days_to_cont (longest burning wildfire in guinness book of records is 5 months roughly 150 days)
+dtc_large_values <- fires_new[which(fires_new$DAYS_TO_CONT > 150), ]
+dtc_large_values 
+
+# replace days_to_cont > 150 with NA
+fires_new$DAYS_TO_CONT[fires_new$DAYS_TO_CONT > 150] <- NA
+
+glimpse(fires_new)
+
+# check na
+fires_new_na_count <- sapply(fires_new, function(y) sum(length(which(is.na(y)))))
+fires_new_na_count <- data.frame(fires_new_na_count)
+fires_new_na_count
+
+fires_new %>% count(DAYS_TO_CONT)
+  
+# replace na values in days_to_cont by state/fire_size_class group medians and round them
+fires_new <- fires_new %>% 
+  group_by(FIRE_SIZE_CLASS, STATE) %>% 
+  mutate(DAYS_TO_CONT = ifelse(is.na(DAYS_TO_CONT), 
+                               round(median(DAYS_TO_CONT, na.rm = TRUE)), 
+                               DAYS_TO_CONT)) %>%
+  ungroup()
+
+glimpse(fires_new)
+
+# check na
+fires_new_na_count <- sapply(fires_new, function(y) sum(length(which(is.na(y)))))
+fires_new_na_count <- data.frame(fires_new_na_count)
+fires_new_na_count
+
+fires_new %>% count(DAYS_TO_CONT)
+
+# subset remaining na's to review
+days_to_cont_na <- fires_new[is.na(fires_new$DAYS_TO_CONT), ]
+days_to_cont_na
+
+# replace remaining na values in days_to_cont by fire_size_class group median only and round them
+fires_new <- fires_new %>% 
+  group_by(FIRE_SIZE_CLASS) %>% 
+  mutate(DAYS_TO_CONT = ifelse(is.na(DAYS_TO_CONT), 
+                               round(median(DAYS_TO_CONT, na.rm = TRUE)), 
+                               DAYS_TO_CONT)) %>%
+  ungroup()
+
+# check na
+fires_new_na_count <- sapply(fires_new, function(y) sum(length(which(is.na(y)))))
+fires_new_na_count <- data.frame(fires_new_na_count)
+fires_new_na_count
+
+# check null
+fires_new_null_count <- sapply(fires_new, function(y) sum(length(which(is.null(y)))))
+fires_new_null_count <- data.frame(fires_new_null_count)
+fires_new_null_count
+
+glimpse(fires_new)
+
+```
+
+## Create subsets (CA, West, East)
+
+```{r, tidy=TRUE, tidy.opts=list(width.cutoff=80)}
+# create CA df
+fires_new_ca <- subset(fires_new, STATE=="CA")
+
+glimpse(fires_new_ca)
+
+# check na
+fires_new_ca_na_count <- sapply(fires_new_ca, function(y) sum(length(which(is.na(y)))))
+fires_new_ca_na_count <- data.frame(fires_new_ca_na_count)
+print(fires_new_ca_na_count)
+
+# create West df
+fires_new_west <- subset(fires_new, REGION =="West")
+
+glimpse(fires_new_west)
+
+# create East df
+fires_new_east <- subset(fires_new, REGION =="East")
+
+glimpse(fires_new_east)
+```
+
+## Import US (48 states) Drought Indicator Data (5 year SPEI) 1992 - 2020 from CSV
+
+```{r, tidy=TRUE, tidy.opts=list(width.cutoff=80)}
+us_SPEI <- read.csv('drought_fig-2_US5SPEI.csv')
+glimpse(us_SPEI)
+
+us_SPEI %<>% mutate_at("Year", factor)
+glimpse(us_SPEI)
+
+# rename column
+us_SPEI <- rename(us_SPEI, US_5yr_SPEI = Five.year.SPEI.value)
+glimpse(us_SPEI)
+```
+
+## Import CA Drought Indicator Data (5 year SPEI) 1992 - 2021 from CSV
+
+```{r, tidy=TRUE, tidy.opts=list(width.cutoff=80)}
+ca_SPEI <- read.csv('CA_5SPEI.csv')
+glimpse(ca_SPEI)
+
+ca_SPEI %<>% mutate_at("Year", factor)
+glimpse(ca_SPEI)
+
+ca_SPEI <- rename(ca_SPEI, CA_5yr_SPEI = Five.year.SPEI.value)
+glimpse(ca_SPEI)
+
+```
+
+## Combine SPEI dataframes
+
+```{r, tidy=TRUE, tidy.opts=list(width.cutoff=80)}
+combined_SPEI <- merge(us_SPEI, ca_SPEI, by = "Year", all = TRUE)
+glimpse(combined_SPEI)
+
+ # Reshape data frame
+combined_SPEI_group <- data.frame(Year = combined_SPEI$Year,                           
+                       SPEI = c(combined_SPEI$US_5yr_SPEI, combined_SPEI$CA_5yr_SPEI),
+                       Location = c(rep("US_5yr_SPEI", nrow(combined_SPEI)),
+                                 rep("CA_5yr_SPEI", nrow(combined_SPEI))))
+combined_SPEI_group
+
+# convert to factor
+combined_SPEI_group %<>% mutate_at("Location", factor)
+
+glimpse(combined_SPEI_group)
+
+ggp <- ggplot(combined_SPEI_group, aes(x=Year, y=SPEI, col=Location, group=Location)) + geom_line()
+ggp
+
+ggp <- ggplot(combined_SPEI_group, aes(Year, SPEI, fill=Location)) + 
+      geom_bar(stat = "identity", position = 'dodge') +
+      labs(x = 'YEAR', y = 'SPEI', title = 'Average Five-year SPEI by Year')
+ggp
+
+# Draw plot in different panels
+# ggp + facet_grid(Group ~ .)
+```
+
+## Summarise datasets
+
+```{r, tidy=TRUE, tidy.opts=list(width.cutoff=80)}
+summary(fires_new) #discovered DAY_TO_CONT outliers and then found containment dates in the future so went back to transformation step to replace them with NA
+summary(combined_SPEI)
+summary(combined_SPEI_group)
+```
+
+## Descriptive Statistics
+
+```{r, tidy=TRUE, tidy.opts=list(width.cutoff=80)}
+attach(fires_new)
+fires_new_num <- cbind(FIRE_SIZE, LATITUDE, LONGITUDE, DAYS_TO_CONT)
+options(scipen=100)
+options(digits=2)
+stat.desc(fires_new_num)
+
+attach(combined_SPEI)
+combined_SPEI_num <- cbind(US_5yr_SPEI, CA_5yr_SPEI)
+stat.desc(combined_SPEI_num)
+```
+
+```{r, tidy=TRUE, tidy.opts=list(width.cutoff=80)}
+# Histograms
+
+# https://stackoverflow.com/questions/11610377/how-do-i-change-the-formatting-of-numbers-on-an-axis-with-ggplot
+fancy_scientific <- function(l) {
+     # turn in to character string in scientific notation
+     l <- format(l, scientific = TRUE)
+     # quote the part before the exponent to keep all the digits
+     l <- gsub("^(.*)e", "'\\1'e", l)
+     # remove + after exponent, if exists. E.g.: (3x10^+2 -> 3x10^2)  
+     l <- gsub("e\\+","e",l)
+     # turn the 'e+' into plotmath format
+     l <- gsub("e", "%*%10^", l)
+     # convert 1x10^ or 1.000x10^ -> 10^  
+     l <- gsub("\\'1[\\.0]*\\'\\%\\*\\%", "", l)
+     # return this as an expression
+     parse(text=l)
+}
+
+# us fire size
+ggplot(data = fires_new, aes(x = FIRE_SIZE)) + geom_histogram(bins=100) + scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x), labels = trans_format("log10", math_format(10^.x))) +  scale_y_continuous(labels=fancy_scientific) +  ggtitle("US Fire Size in Acres") + ylab("FREQUENCY") + theme(
+  title = element_text(size = 20),
+  axis.title.x = element_text(size = 16),
+  axis.text.x = element_text(size = 14),
+  axis.text.y = element_text(size = 14),
+  axis.title.y = element_text(size = 16))
+
+# ca fire size
+ggplot(data = fires_new_ca, aes(x = FIRE_SIZE)) + geom_histogram(bins=100) + scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x), labels = trans_format("log10", math_format(10^.x))) +  scale_y_continuous(labels=fancy_scientific) +  ggtitle("CA Fire Size in Acres") + ylab("FREQUENCY") + theme(
+  title = element_text(size = 20),
+  axis.title.x = element_text(size = 16),
+  axis.text.x = element_text(size = 14),
+  axis.text.y = element_text(size = 14),
+  axis.title.y = element_text(size = 16))
+
+# west fire size
+ggplot(data = fires_new_west, aes(x = FIRE_SIZE)) + geom_histogram(bins=100) + scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x), labels = trans_format("log10", math_format(10^.x))) +  scale_y_continuous(labels=fancy_scientific) +  ggtitle("West Fire Size in Acres") + ylab("FREQUENCY") + theme(
+  title = element_text(size = 20),
+  axis.title.x = element_text(size = 16),
+  axis.text.x = element_text(size = 14),
+  axis.text.y = element_text(size = 14),
+  axis.title.y = element_text(size = 16))
+
+# east fire size
+ggplot(data = fires_new_east, aes(x = FIRE_SIZE)) + geom_histogram(bins=100) + scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x), labels = trans_format("log10", math_format(10^.x))) +  scale_y_continuous(labels=fancy_scientific) +  ggtitle("East Fire Size in Acres") + ylab("FREQUENCY") + theme(
+  title = element_text(size = 20),
+  axis.title.x = element_text(size = 16),
+  axis.text.x = element_text(size = 14),
+  axis.text.y = element_text(size = 14),
+  axis.title.y = element_text(size = 16))
+
+# us days to containment
+ggplot(data = fires_new, aes(x = DAYS_TO_CONT)) + geom_histogram(bins=10) + scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x), labels = trans_format("log10", math_format(10^.x))) +  scale_y_continuous(labels=fancy_scientific) +  ggtitle("US Days To Containment") + ylab("FREQUENCY") + theme(
+  title = element_text(size = 20),
+  axis.title.x = element_text(size = 16),
+  axis.text.x = element_text(size = 14),
+  axis.text.y = element_text(size = 14),
+  axis.title.y = element_text(size = 16))
+
+# ca days to containment
+ggplot(data = fires_new_ca, aes(x = DAYS_TO_CONT)) + geom_histogram(bins=10) + scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x), labels = trans_format("log10", math_format(10^.x))) +  scale_y_continuous(labels=fancy_scientific) +  ggtitle("CA Days To Containment") + ylab("FREQUENCY") + theme(
+  title = element_text(size = 20),
+  axis.title.x = element_text(size = 16),
+  axis.text.x = element_text(size = 14),
+  axis.text.y = element_text(size = 14),
+  axis.title.y = element_text(size = 16))
+
+# west days to containment
+ggplot(data = fires_new_west, aes(x = DAYS_TO_CONT)) + geom_histogram(bins=10) + scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x), labels = trans_format("log10", math_format(10^.x))) +  scale_y_continuous(labels=fancy_scientific) +  ggtitle("West Days To Containment") + ylab("FREQUENCY") + theme(
+  title = element_text(size = 20),
+  axis.title.x = element_text(size = 16),
+  axis.text.x = element_text(size = 14),
+  axis.text.y = element_text(size = 14),
+  axis.title.y = element_text(size = 16))
+
+# East days to containment
+ggplot(data = fires_new_east, aes(x = DAYS_TO_CONT)) + geom_histogram(bins=10) + scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x), labels = trans_format("log10", math_format(10^.x))) +  scale_y_continuous(labels=fancy_scientific) +  ggtitle("East Days To Containment") + ylab("FREQUENCY") + theme(
+  title = element_text(size = 20),
+  axis.title.x = element_text(size = 16),
+  axis.text.x = element_text(size = 14),
+  axis.text.y = element_text(size = 14),
+  axis.title.y = element_text(size = 16))
+
+
+```
+
+```{r, tidy=TRUE, tidy.opts=list(width.cutoff=80)}
+# Boxplots Fire Size, Days to Containment and SPEI, US and CA
+
+# x labels with the number of obs for each group
+# US
+fire_year_new_xlab <- paste(levels(fires_new$FIRE_YEAR),"\n(N=",table(fires_new$FIRE_YEAR),")",sep="")
+# CA
+fire_year_new_ca_xlab <- paste(levels(fires_new_ca$FIRE_YEAR),"\n(N=",table(fires_new_ca$FIRE_YEAR),")",sep="")
+
+
+# US fireszie 
+box_violin_new_fs <- ggplot(data = fires_new, aes(x=FIRE_YEAR, y=FIRE_SIZE)) + stat_boxplot(geom ='errorbar', width = 0.3) + geom_boxplot(varwidth=TRUE, alpha=1, outlier.shape = 1, outlier.alpha = 0.5) + geom_violin(width=1.4, alpha=0.1) + scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x), labels = trans_format("log10", math_format(10^.x))) + stat_summary(fun=mean, geom="point", shape=23, size=3) + scale_x_discrete(labels=fire_year_new_xlab) +  ggtitle("US Fire Size in Acres by Year") + theme(legend.position="none", plot.title = element_text(size=22))
+box_violin_new_fs 
+
+# CA firesize
+box_violin_new_ca_fs <- ggplot(data = fires_new_ca, aes(x=FIRE_YEAR, y=FIRE_SIZE)) + stat_boxplot(geom ='errorbar', width = 0.3) + geom_boxplot(varwidth=TRUE, alpha=1, outlier.shape = 1, outlier.alpha = 0.5) + geom_violin(width=1.4, alpha=0.1) + scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x), labels = trans_format("log10", math_format(10^.x))) + stat_summary(fun=mean, geom="point", shape=23, size=3)+ scale_x_discrete(labels=fire_year_new_ca_xlab) +  ggtitle("CA Fire Size in Acres by Year") + theme(legend.position="none", plot.title = element_text(size=22))
+box_violin_new_ca_fs
+
+# US days to cont
+box_violin_new_dtc <- ggplot(data = fires_new, aes(x=FIRE_YEAR, y=DAYS_TO_CONT)) + stat_boxplot(geom ='errorbar', width = 0.3) + geom_boxplot(varwidth=TRUE, alpha=1, outlier.shape = 1, outlier.alpha = 0.5) + geom_violin(width=1.4, alpha=0.1)  + scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x), labels = trans_format("log10", math_format(10^.x))) + stat_summary(fun=mean, geom="point", shape=23, size=3)+ scale_x_discrete(labels=fire_year_new_xlab) +  ggtitle("US Days to Containment by Year") + theme(legend.position="none", plot.title = element_text(size=22))
+box_violin_new_dtc
+
+# CA days to cont
+box_violin_new_ca_dtc <- ggplot(data = fires_new_ca, aes(x=FIRE_YEAR, y=DAYS_TO_CONT)) + stat_boxplot(geom ='errorbar', width = 0.3) + geom_boxplot(varwidth=TRUE, alpha=1, outlier.shape = 1, outlier.alpha = 0.5) + geom_violin(width=1.4, alpha=0.1)  + scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x), labels = trans_format("log10", math_format(10^.x))) + stat_summary(fun=mean, geom="point", shape=23, size=3) + scale_x_discrete(labels=fire_year_new_ca_xlab) +  ggtitle("CA Days to Containment by Year") + theme(legend.position="none", plot.title = element_text(size=22))
+box_violin_new_ca_dtc
+
+#East vs West
+
+# x labels with the number of obs for each group
+# West
+fire_year_west_xlab <- paste(levels(fires_new_west$FIRE_YEAR),"\n(N=",table(fires_new_west$FIRE_YEAR),")",sep="")
+# East
+fire_year_east_xlab <- paste(levels(fires_new_east$FIRE_YEAR),"\n(N=",table(fires_new_east$FIRE_YEAR),")",sep="")
+
+
+# West fireszie 
+box_violin_west_fs <- ggplot(data = fires_new_west, aes(x=FIRE_YEAR, y=FIRE_SIZE)) + stat_boxplot(geom ='errorbar', width = 0.3) + geom_boxplot(varwidth=TRUE, alpha=1, outlier.shape = 1, outlier.alpha = 0.5) + geom_violin(width=1.4, alpha=0.1) + scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x), labels = trans_format("log10", math_format(10^.x))) + stat_summary(fun=mean, geom="point", shape=23, size=3) + scale_x_discrete(labels=fire_year_west_xlab) +  ggtitle("West Fire Size in Acres by Year") + theme(legend.position="none", plot.title = element_text(size=22))
+box_violin_west_fs 
+
+# East firesize
+box_violin_east_fs <- ggplot(data = fires_new_east, aes(x=FIRE_YEAR, y=FIRE_SIZE)) + stat_boxplot(geom ='errorbar', width = 0.3) + geom_boxplot(varwidth=TRUE, alpha=1, outlier.shape = 1, outlier.alpha = 0.5) + geom_violin(width=1.4, alpha=0.1) + scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x), labels = trans_format("log10", math_format(10^.x))) + stat_summary(fun=mean, geom="point", shape=23, size=3)+ scale_x_discrete(labels=fire_year_east_xlab) +  ggtitle("East Fire Size in Acres by Year") + theme(legend.position="none", plot.title = element_text(size=22))
+box_violin_east_fs
+
+# West days to cont
+box_violin_west_dtc <- ggplot(data = fires_new_west, aes(x=FIRE_YEAR, y=DAYS_TO_CONT)) + stat_boxplot(geom ='errorbar', width = 0.3) + geom_boxplot(varwidth=TRUE, alpha=1, outlier.shape = 1, outlier.alpha = 0.5) + geom_violin(width=1.4, alpha=0.1)  + scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x), labels = trans_format("log10", math_format(10^.x))) + stat_summary(fun=mean, geom="point", shape=23, size=3)+ scale_x_discrete(labels=fire_year_west_xlab) +  ggtitle("West Days to Containment by Year") + theme(legend.position="none", plot.title = element_text(size=22))
+box_violin_west_dtc
+
+# East days to cont
+box_violin_east_dtc <- ggplot(data = fires_new_east, aes(x=FIRE_YEAR, y=DAYS_TO_CONT)) + stat_boxplot(geom ='errorbar', width = 0.3) + geom_boxplot(varwidth=TRUE, alpha=1, outlier.shape = 1, outlier.alpha = 0.5) + geom_violin(width=1.4, alpha=0.1)  + scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x), labels = trans_format("log10", math_format(10^.x))) + stat_summary(fun=mean, geom="point", shape=23, size=3) + scale_x_discrete(labels=fire_year_east_xlab) +  ggtitle("East Days to Containment by Year") + theme(legend.position="none", plot.title = element_text(size=22))
+box_violin_east_dtc
+
+
+# x labels with the number of obs for each group SPEI
+location_spei_xlab <- paste(levels(combined_SPEI_group$Location),"\n(N=",table(combined_SPEI_group$Location),")",sep="")
+
+# US & CA SPEI
+box_SPEI_group <- ggplot(combined_SPEI_group, aes(Location, SPEI)) + stat_boxplot(geom ='errorbar', width = 0.2) + geom_boxplot(notch=TRUE, varwidth = TRUE, outlier.shape = NA) + stat_summary(fun=mean, geom="point", shape=23, size=3) + scale_x_discrete(labels=location_spei_xlab) + geom_jitter(width = 0.2) + ggtitle("SPEI by Location") + theme(legend.position="none", plot.title = element_text(size=22))
+box_SPEI_group
+```
+## Visualizations
+```{r, tidy=TRUE, tidy.opts=list(width.cutoff=80)}
+glimpse(fires_new)
+
+# Fires over time
+
+fires_new %>% 
+    group_by(FIRE_YEAR) %>%
+    summarize(n_fires = n()) %>%
+    ggplot(aes(x = FIRE_YEAR, y = n_fires/1000)) + 
+    geom_bar(stat = 'identity', fill = 'grey') +
+    labs(x = 'FIRE_YEAR', y = 'Number of wildfires (thousands)', title = 'US Wildfires by Year') + theme(
+  title = element_text(size = 20),
+  axis.title.x = element_text(size = 16),
+  axis.text.x = element_text(size = 14),
+  axis.text.y = element_text(size = 14),
+  axis.title.y = element_text(size = 16))
+
+fires_new_ca %>% 
+    group_by(FIRE_YEAR) %>%
+    summarize(n_fires = n()) %>%
+    ggplot(aes(x = FIRE_YEAR, y = n_fires/1000)) + 
+    geom_bar(stat = 'identity', fill = 'grey') +
+    labs(x = 'FIRE_YEAR', y = 'Number of wildfires (thousands)', title = 'CA Wildfires by Year') + theme(
+  title = element_text(size = 20),
+  axis.title.x = element_text(size = 16),
+  axis.text.x = element_text(size = 14),
+  axis.text.y = element_text(size = 14),
+  axis.title.y = element_text(size = 16))
+
+fires_new_west %>% 
+    group_by(FIRE_YEAR) %>%
+    summarize(n_fires = n()) %>%
+    ggplot(aes(x = FIRE_YEAR, y = n_fires/1000)) + 
+    geom_bar(stat = 'identity', fill = 'grey') +
+    labs(x = 'FIRE_YEAR', y = 'Number of wildfires (thousands)', title = 'Western States Wildfires by Year') + theme(
+  title = element_text(size = 20),
+  axis.title.x = element_text(size = 16),
+  axis.text.x = element_text(size = 14),
+  axis.text.y = element_text(size = 14),
+  axis.title.y = element_text(size = 16))
+
+fires_new_east %>% 
+    group_by(FIRE_YEAR) %>%
+    summarize(n_fires = n()) %>%
+    ggplot(aes(x = FIRE_YEAR, y = n_fires/1000)) + 
+    geom_bar(stat = 'identity', fill = 'grey') +
+    labs(x = 'FIRE_YEAR', y = 'Number of wildfires (thousands)', title = 'Eastern States Wildfires by Year') + theme(
+  title = element_text(size = 20),
+  axis.title.x = element_text(size = 16),
+  axis.text.x = element_text(size = 14),
+  axis.text.y = element_text(size = 14),
+  axis.title.y = element_text(size = 16))
+
+```
+```{r, tidy=TRUE, tidy.opts=list(width.cutoff=80)}
+# Fires Causes
+
+# US Fires by cause
+fires_new %>%
+    group_by(NWCG_GENERAL_CAUSE) %>%
+    summarize(n_fires = n()/1000) %>%
+    ggplot(aes(x = reorder(NWCG_GENERAL_CAUSE, n_fires), y = n_fires)) +
+    geom_bar(stat = 'identity', fill = 'grey') + 
+    coord_flip() + 
+    labs(x = '', y = 'Number of fires (thousands)', title = 'US Fires by Cause') + theme(
+  title = element_text(size = 20),
+  axis.title.x = element_text(size = 16),
+  axis.text.x = element_text(size = 14),
+  axis.text.y = element_text(size = 14))
+
+# CA Fires by cause
+fires_new_ca %>%
+    group_by(NWCG_GENERAL_CAUSE) %>%
+    summarize(n_fires = n()/1000) %>%
+    ggplot(aes(x = reorder(NWCG_GENERAL_CAUSE, n_fires), y = n_fires)) +
+    geom_bar(stat = 'identity', fill = 'grey') + 
+    coord_flip() + 
+    labs(x = '', y = 'Number of fires (thousands)', title = 'CA Fires by Cause') + theme(
+  title = element_text(size = 20),
+  axis.title.x = element_text(size = 16),
+  axis.text.x = element_text(size = 14),
+  axis.text.y = element_text(size = 14))
+
+# West Fires by cause
+fires_new_west %>%
+    group_by(NWCG_GENERAL_CAUSE) %>%
+    summarize(n_fires = n()/1000) %>%
+    ggplot(aes(x = reorder(NWCG_GENERAL_CAUSE, n_fires), y = n_fires)) +
+    geom_bar(stat = 'identity', fill = 'grey') + 
+    coord_flip() + 
+    labs(x = '', y = 'Number of fires (thousands)', title = 'West Fires by Cause') + theme(
+  title = element_text(size = 20),
+  axis.title.x = element_text(size = 16),
+  axis.text.x = element_text(size = 14),
+  axis.text.y = element_text(size = 14))
+
+# East Fires by cause
+fires_new_east %>%
+    group_by(NWCG_GENERAL_CAUSE) %>%
+    summarize(n_fires = n()/1000) %>%
+    ggplot(aes(x = reorder(NWCG_GENERAL_CAUSE, n_fires), y = n_fires)) +
+    geom_bar(stat = 'identity', fill = 'grey') + 
+    coord_flip() + 
+    labs(x = '', y = 'Number of fires (thousands)', title = 'East Fires by Cause') + theme(
+  title = element_text(size = 20),
+  axis.title.x = element_text(size = 16),
+  axis.text.x = element_text(size = 14),
+  axis.text.y = element_text(size = 14))
+
+# US Fire Size by cause
+fires_new %>% 
+    group_by(NWCG_GENERAL_CAUSE) %>%
+    summarize(mean_size = mean(FIRE_SIZE, na.rm = TRUE)) %>%
+    ggplot(aes(x = reorder(NWCG_GENERAL_CAUSE, mean_size), y = mean_size)) +
+    geom_bar(stat = 'identity', fill = 'grey') + 
+    coord_flip() + 
+    labs(x = '', y = 'Acres', title = 'US Avg Fire Size by Cause') + theme(
+  title = element_text(size = 20),
+  axis.title.x = element_text(size = 16),
+  axis.text.x = element_text(size = 14),
+  axis.text.y = element_text(size = 14))
+
+# CA Fire Size by cause
+fires_new_ca %>% 
+    group_by(NWCG_GENERAL_CAUSE) %>%
+    summarize(mean_size = mean(FIRE_SIZE, na.rm = TRUE)) %>%
+    ggplot(aes(x = reorder(NWCG_GENERAL_CAUSE, mean_size), y = mean_size)) +
+    geom_bar(stat = 'identity', fill = 'grey') + 
+    coord_flip() + 
+    labs(x = '', y = 'Acres', title = 'CA Avg Fire Size by Cause') + theme(
+  title = element_text(size = 20),
+  axis.title.x = element_text(size = 16),
+  axis.text.x = element_text(size = 14),
+  axis.text.y = element_text(size = 14))
+
+# West Fire Size by cause
+fires_new_west %>% 
+    group_by(NWCG_GENERAL_CAUSE) %>%
+    summarize(mean_size = mean(FIRE_SIZE, na.rm = TRUE)) %>%
+    ggplot(aes(x = reorder(NWCG_GENERAL_CAUSE, mean_size), y = mean_size)) +
+    geom_bar(stat = 'identity', fill = 'grey') + 
+    coord_flip() + 
+    labs(x = '', y = 'Acres', title = 'West Avg Fire Size by Cause') + theme(
+  title = element_text(size = 20),
+  axis.title.x = element_text(size = 16),
+  axis.text.x = element_text(size = 14),
+  axis.text.y = element_text(size = 14))
+
+# East Fire Size by cause
+fires_new_east %>% 
+    group_by(NWCG_GENERAL_CAUSE) %>%
+    summarize(mean_size = mean(FIRE_SIZE, na.rm = TRUE)) %>%
+    ggplot(aes(x = reorder(NWCG_GENERAL_CAUSE, mean_size), y = mean_size)) +
+    geom_bar(stat = 'identity', fill = 'grey') + 
+    coord_flip() + 
+    labs(x = '', y = 'Acres', title = 'East Avg Fire Size by Cause') + theme(
+  title = element_text(size = 20),
+  axis.title.x = element_text(size = 16),
+  axis.text.x = element_text(size = 14),
+  axis.text.y = element_text(size = 14))
+
+# US Days to cont by cause
+fires_new %>% 
+    group_by(NWCG_GENERAL_CAUSE) %>%
+    summarize(mean_days_to_cont = mean(DAYS_TO_CONT, na.rm = TRUE)) %>%
+    ggplot(aes(x = reorder(NWCG_GENERAL_CAUSE, mean_days_to_cont), y = mean_days_to_cont)) +
+    geom_bar(stat = 'identity', fill = 'grey') + 
+    coord_flip() + 
+    labs(x = '', y = 'Days', title = 'US Avg Days to Containment by Cause') + theme(
+  title = element_text(size = 20),
+  axis.title.x = element_text(size = 16),
+  axis.text.x = element_text(size = 14),
+  axis.text.y = element_text(size = 14))
+
+# CA Days to cont by cause
+fires_new_ca %>% 
+    group_by(NWCG_GENERAL_CAUSE) %>%
+    summarize(mean_days_to_cont = mean(DAYS_TO_CONT, na.rm = TRUE)) %>%
+    ggplot(aes(x = reorder(NWCG_GENERAL_CAUSE, mean_days_to_cont), y = mean_days_to_cont)) +
+    geom_bar(stat = 'identity', fill = 'grey') + 
+    coord_flip() + 
+    labs(x = '', y = 'Days', title = 'CA Avg Days to Containment by Cause') + theme(
+  title = element_text(size = 20),
+  axis.title.x = element_text(size = 16),
+  axis.text.x = element_text(size = 14),
+  axis.text.y = element_text(size = 14))
+
+# West Days to cont by cause
+fires_new_west %>% 
+    group_by(NWCG_GENERAL_CAUSE) %>%
+    summarize(mean_days_to_cont = mean(DAYS_TO_CONT, na.rm = TRUE)) %>%
+    ggplot(aes(x = reorder(NWCG_GENERAL_CAUSE, mean_days_to_cont), y = mean_days_to_cont)) +
+    geom_bar(stat = 'identity', fill = 'grey') + 
+    coord_flip() + 
+    labs(x = '', y = 'Days', title = 'West Avg Days to Containment by Cause') + theme(
+  title = element_text(size = 20),
+  axis.title.x = element_text(size = 16),
+  axis.text.x = element_text(size = 14),
+  axis.text.y = element_text(size = 14))
+
+# East Days to cont by cause
+fires_new_east %>% 
+    group_by(NWCG_GENERAL_CAUSE) %>%
+    summarize(mean_days_to_cont = mean(DAYS_TO_CONT, na.rm = TRUE)) %>%
+    ggplot(aes(x = reorder(NWCG_GENERAL_CAUSE, mean_days_to_cont), y = mean_days_to_cont)) +
+    geom_bar(stat = 'identity', fill = 'grey') + 
+    coord_flip() + 
+    labs(x = '', y = 'Days', title = 'East Avg Days to Containment by Cause') + theme(
+  title = element_text(size = 20),
+  axis.title.x = element_text(size = 16),
+  axis.text.x = element_text(size = 14),
+  axis.text.y = element_text(size = 14))
+
+```
+## Correlation Matrix Numeric Attributes
+
+```{r, tidy=TRUE, tidy.opts=list(width.cutoff=80)}
+# US fires
+data(fires_new, package = "mosaicData")
+df <- dplyr::select_if(fires_new, is.numeric)
+r <- cor(df, use="complete.obs") 
+round(r,2)
+ggcorrplot(r,
+hc.order = TRUE,
+type = "lower", lab = TRUE)
+
+# CA fires
+data(fires_new_ca, package = "mosaicData")
+df <- dplyr::select_if(fires_new_ca, is.numeric)
+r <- cor(df, use="complete.obs") 
+round(r,2)
+ggcorrplot(r,
+hc.order = TRUE,
+type = "lower", lab = TRUE)
+
+# West fires
+data(fires_new_west, package = "mosaicData")
+df <- dplyr::select_if(fires_new_west, is.numeric)
+r <- cor(df, use="complete.obs") 
+round(r,2)
+ggcorrplot(r,
+hc.order = TRUE,
+type = "lower", lab = TRUE)
+
+# East fires
+data(fires_new_east, package = "mosaicData")
+df <- dplyr::select_if(fires_new_east, is.numeric)
+r <- cor(df, use="complete.obs") 
+round(r,2)
+ggcorrplot(r,
+hc.order = TRUE,
+type = "lower", lab = TRUE)
+```
+## Fire size and SPEI Linear Regression
+```{r, tidy=TRUE, tidy.opts=list(width.cutoff=80)}
+# CA FIRE_SIZE & SPEI
+# new df with fire_year and mean fire size for CA
+fires_new_ca_fs <- fires_new_ca %>%
+  group_by(FIRE_YEAR) %>%
+  summarise_at(vars(FIRE_SIZE), list(AVG_FIRE_SIZE_CA = mean))
+
+fires_new_ca_fs
+
+# rename fire_year for merging
+fires_new_ca_fs <- rename_all(fires_new_ca_fs, recode, FIRE_YEAR= "Year")
+fires_new_ca_fs
+
+# merge with Ca-spei
+ca_fs_spei <- merge(fires_new_ca_fs, ca_SPEI, by = "Year", all = TRUE)
+ca_fs_spei
+
+# linear regression
+fit1 <- lm(AVG_FIRE_SIZE_CA ~ CA_5yr_SPEI, data = ca_fs_spei)
+summary(fit1)
+
+#Linear regression func for values to show on visual
+ggplotRegression <- function (fit) {
+
+require(ggplot2)
+
+ggplot(fit$model, aes_string(x = names(fit$model)[2], y = names(fit$model)[1])) + 
+  geom_point() +
+  stat_smooth(method = "lm", col = "red") +
+  labs(title = paste("Adj R2 = ",signif(summary(fit)$adj.r.squared, 5),
+                     "Intercept =",signif(fit$coef[[1]],5 ),
+                     " Slope =",signif(fit$coef[[2]], 5),
+                     " P =",signif(summary(fit)$coef[2,4], 5)))
+}
+
+ggplotRegression(fit1)
+
+#normalize FIRE_SIZE_CA 
+ca_fs_spei_norm <- ca_fs_spei %>% mutate_at(c("AVG_FIRE_SIZE_CA"), ~(scale(.) %>% as.vector))
+ca_fs_spei_norm
+
+fit2 <- lm(AVG_FIRE_SIZE_CA ~ CA_5yr_SPEI, data = ca_fs_spei_norm)
+summary(fit2)
+ggplotRegression(fit2)
+#normalization gives same result
+
+```
+## Fire frequency and SPEI Linear Regression
+
+```{r, tidy=TRUE, tidy.opts=list(width.cutoff=80)}
+# CA FIRE_FREQ & SPEI
+# new df with fire_year and fire frequency for CA
+fires_new_ca_ff <- fires_new_ca %>%
+  group_by(FIRE_YEAR) %>%
+  summarise(CA_FIRE_FREQ = (count=n()))
+
+fires_new_ca_ff
+
+# rename fire_year for merging
+fires_new_ca_ff <- rename_all(fires_new_ca_ff, recode, FIRE_YEAR= "Year")
+fires_new_ca_ff
+
+# merge with Ca-spei
+ca_ff_spei <- merge(fires_new_ca_ff, ca_SPEI, by = "Year", all = TRUE)
+ca_ff_spei
+
+# linear regression
+fit3 <- lm(CA_FIRE_FREQ ~ CA_5yr_SPEI, data = ca_ff_spei)
+summary(fit3)
+
+ggplotRegression(fit3)
+```
+## Fire area and SPEI Linear Regression
+
+```{r, tidy=TRUE, tidy.opts=list(width.cutoff=80)}
+# CA FIRE_AREA & SPEI
+# new df with fire_year and fire area for CA
+fires_new_ca_fa <- fires_new_ca %>%
+  group_by(FIRE_YEAR) %>%
+  summarise_at(vars(FIRE_SIZE), list(AREA_BURNED_CA = sum))
+
+fires_new_ca_fa
+
+# rename fire_year for merging
+fires_new_ca_fa <- rename_all(fires_new_ca_fa, recode, FIRE_YEAR= "Year")
+fires_new_ca_fa
+
+# merge with Ca-spei
+ca_fa_spei <- merge(fires_new_ca_fa, ca_SPEI, by = "Year", all = TRUE)
+ca_fa_spei
+
+# linear regression
+fit4 <- lm(AREA_BURNED_CA ~ CA_5yr_SPEI, data = ca_fa_spei)
+summary(fit4)
+
+ggplotRegression(fit4)
+```
+## Large Fires and SPEI Linear Regression
+```{r, tidy=TRUE, tidy.opts=list(width.cutoff=80)}
+# Number of fires greater than 10,000 acres and the proportion 
+# Large fire defined as > 10,000 in literature here: (https://fireecology.springeropen.com/articles/10.1186/s42408-021-00110-7)
+fires_new_ca_lf <- fires_new_ca %>%
+  group_by(FIRE_YEAR) %>%
+  summarize(CA_NUM_FIRES = n(), 
+            CA_NUM_LARGE_FIRES = sum(FIRE_SIZE > 10000), 
+            CA_PCT_LARGE_FIRES = (CA_NUM_LARGE_FIRES / CA_NUM_FIRES)*100)
+fires_new_ca_lf
+
+# rename fire_year for merging
+fires_new_ca_lf <- rename_all(fires_new_ca_lf, recode, FIRE_YEAR= "Year")
+fires_new_ca_lf
+
+# merge with Ca-spei
+ca_lf_spei <- merge(fires_new_ca_lf, ca_SPEI, by = "Year", all = TRUE)
+ca_lf_spei
+
+# linear regression
+fit5 <- lm(CA_PCT_LARGE_FIRES ~ CA_5yr_SPEI, data = ca_lf_spei)
+summary(fit5)
+
+ggplotRegression(fit5)
+
+```
+## Multiple Linear Regression
+
+```{r, tidy=TRUE, tidy.opts=list(width.cutoff=80)}
+# merge fa,fs,lf
+ca_fa_lf_SPEI <-  merge(fires_new_ca_fa, ca_lf_spei, by = "Year", all = TRUE)
+ca_combined_SPEI <-  merge(fires_new_ca_fs, ca_fa_lf_SPEI, by = "Year", all = TRUE)
+ca_combined_SPEI 
+
+# ca_combined_SPEI correlation
+data(ca_combined_SPEI, package = "mosaicData")
+df <- dplyr::select_if(ca_combined_SPEI, is.numeric)
+r <- cor(df, use="complete.obs") 
+round(r,2)
+ggcorrplot(r,
+hc.order = TRUE,
+type = "lower", lab = TRUE)
+
+# Multiple Linear Regression
+model <- lm(CA_5yr_SPEI ~ AVG_FIRE_SIZE_CA + AREA_BURNED_CA + CA_NUM_FIRES + CA_NUM_LARGE_FIRES + CA_PCT_LARGE_FIRES, data = ca_combined_SPEI)
+print(model)
+summary(model)
+
+# Get the Intercept and coefficients as vector elements. 
+cat("# # # # The Coefficient Values # # # ","\n")
+a <- coef(model)[1] 
+print(a)
+XAVG_FIRE_SIZE_CA <- coef(model)[2] 
+XAREA_BURNED_CA <- coef(model)[3] 
+XCA_NUM_FIRES <- coef(model)[4] 
+XCA_NUM_LARGE_FIRES <- coef(model)[5] 
+XCA_PCT_LARGE_FIRES <- coef(model)[6]
+print(XAVG_FIRE_SIZE_CA)
+print(XAREA_BURNED_CA) 
+print(XCA_NUM_FIRES)
+print(XCA_NUM_LARGE_FIRES)
+print(XCA_PCT_LARGE_FIRES)
+
+```
+## CA AVG_FIRE_SIZE Prediction
+```{r, tidy=TRUE, tidy.opts=list(width.cutoff=80)}
+# Use 2019 - 2021 ca_SPEI values to predict avg fire size
+ca_fs_spei
+ca_SPEI_new <- data.frame(CA_5yr_SPEI=c(-0.61, -0.61, -1.10))
+ca_avg_fs_pred <- data.frame(Year = c(2019, 2020, 2021), AVG_FIRE_SIZE_CA = predict(fit1, ca_SPEI_new))
+ca_avg_fs_pred
+ca_fs_spei<- ca_fs_spei %>% mutate(AVG_FIRE_SIZE_CA = if_else(Year == 2019, 71, AVG_FIRE_SIZE_CA))
+ca_fs_spei<- ca_fs_spei %>% mutate(AVG_FIRE_SIZE_CA = if_else(Year == 2020, 71, AVG_FIRE_SIZE_CA))
+ca_fs_spei<- ca_fs_spei %>% mutate(AVG_FIRE_SIZE_CA = if_else(Year == 2021, 81, AVG_FIRE_SIZE_CA))
+ca_fs_spei
+
+#Scatter plot with predicted values in red
+ca_fs_spei %>% 
+  ggplot(aes(x=CA_5yr_SPEI,y=AVG_FIRE_SIZE_CA)) +
+  geom_point() +
+  geom_point(data=ca_fs_spei[28:30, ], aes(x=CA_5yr_SPEI, y=AVG_FIRE_SIZE_CA), colour="red", size=2) +
+  labs(title = 'Scatter Plot with Predicted Average Fire Size Values in Red')
+
+ca_fs_spei %>% 
+    ggplot(aes(x = Year, y = AVG_FIRE_SIZE_CA)) + 
+    geom_bar(stat = 'identity', fill = 'grey') +
+    labs(title = 'CA Average Fire Size with Predicted Values') + theme(
+  title = element_text(size = 20),
+  axis.title.x = element_text(size = 16),
+  axis.text.x = element_text(size = 14),
+  axis.text.y = element_text(size = 14),
+  axis.title.y = element_text(size = 16))
+
+```

@@ -9,6 +9,7 @@
 .Ruserdata
 FPA_FOD_20210617.sqlite
 .DS_Store
+us-wildfires-and-drought.html
 
 # Example code in package build process
 *-Ex.R
