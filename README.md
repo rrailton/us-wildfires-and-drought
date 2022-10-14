@@ -2,8 +2,10 @@
 
 ## Overview
 
-This projects explores the relationship between wildfires and drought using
-statistical analysis and logistic regression.
+This projects explores the relationship between wildfires and drought in the US
+over the last 30 years using statistical analysis and logistic regression in R.
+It was completed as part of the Data Science & Data Analytics certificate program
+at UCSC Extension. Further details can be found in the pdf keynote presentation.
 
 ## Data
 
@@ -23,6 +25,6 @@ There are three csv files for drought and region data:
 
 ### [PDF Keynote Presentation](https://github.com/rrailton/us-wildfires-and-drought/blob/main/us-wildfires-and-dought-presentation.pdf)
 
-### [Github Document .md file](https://github.com/rrailton/us-wildfires-and-drought/blob/main/us-wildfires-and-dought-presentation.pdf)
+### [Github Document .md file](https://github.com/rrailton/us-wildfires-and-drought/blob/main/us-wildfires-and-drought.md)
 
 ### [Original Code .rmd file](https://github.com/rrailton/us-wildfires-and-drought/blob/main/us-wildfires-and-drought.Rmd)
