@@ -3,7 +3,7 @@
 ## Overview
 
 This projects explores the relationship between wildfires and drought in the US
-over the last 30 years using statistical analysis and logistic regression in R.
+over the last 30 years using statistical analysis and linear regression in R.
 It was completed as part of the Data Science & Data Analytics certificate program
 at UCSC Extension. Further details can be found in the pdf keynote presentation.
 
