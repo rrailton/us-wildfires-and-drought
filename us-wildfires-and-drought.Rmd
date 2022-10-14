@@ -44,6 +44,7 @@ install.packages("hrbrthemes") #themes for ggplot2
 ``` -->
 
 # Load Packages
+
 ```{r, libraries, message = FALSE, tidy='styler', tidy.opts=list(strict=FALSE)}
 library(RSQLite) #for connecting to SQLite database
 library(dbplyr) #for connecting to database
@@ -445,6 +446,7 @@ ggplot(data = fires_new_east, aes(x = DAYS_TO_CONT)) + geom_histogram(bins=10) +
 
 
 ```
+
 ## Boxplots
 
 ```{r, boxplots, tidy='styler', tidy.opts=list(strict=FALSE)}
@@ -506,7 +508,9 @@ location_spei_xlab <- paste(levels(combined_SPEI_group$Location),"\n(N=",table(c
 box_SPEI_group <- ggplot(combined_SPEI_group, aes(Location, SPEI)) + stat_boxplot(geom ='errorbar', width = 0.2) + geom_boxplot(notch=TRUE, varwidth = TRUE, outlier.shape = NA) + stat_summary(fun=mean, geom="point", shape=23, size=3) + scale_x_discrete(labels=location_spei_xlab) + geom_jitter(width = 0.2) + ggtitle("SPEI by Location") + theme(legend.position="none", plot.title = element_text(size=22))
 box_SPEI_group
 ```
+
 # Visualizations
+
 ```{r, visualizations, tidy='styler', tidy.opts=list(strict=FALSE)}
 glimpse(fires_new)
 
@@ -721,6 +725,7 @@ fires_new_east %>%
   axis.text.y = element_text(size = 14))
 
 ```
+
 # Correlation Matrix Numeric Attributes
 
 ```{r, correlation-matrix-attributes, tidy='styler', tidy.opts=list(strict=FALSE)}
@@ -760,9 +765,11 @@ ggcorrplot(r,
 hc.order = TRUE,
 type = "lower", lab = TRUE)
 ```
+
 # Linear Regression
 
 ## Fire size and SPEI Linear Regression
+
 ```{r, fire-size-spei-linear-regression, tidy='styler', tidy.opts=list(strict=FALSE)}
 # CA FIRE_SIZE & SPEI
 # new df with fire_year and mean fire size for CA
@@ -810,6 +817,7 @@ ggplotRegression(fit2)
 #normalization gives same result
 
 ```
+
 ## Fire frequency and SPEI Linear Regression
 
 ```{r, fire-freq-spei-linear-regression, tidy='styler', tidy.opts=list(strict=FALSE)}
@@ -835,6 +843,7 @@ summary(fit3)
 
 ggplotRegression(fit3)
 ```
+
 ## Fire area and SPEI Linear Regression
 
 ```{r, fire-area-spei-linear-regression, tidy='styler', tidy.opts=list(strict=FALSE)}
@@ -860,7 +869,9 @@ summary(fit4)
 
 ggplotRegression(fit4)
 ```
+
 ## Large Fires and SPEI Linear Regression
+
 ```{r, fires-large-spei-linear-regression, tidy='styler', tidy.opts=list(strict=FALSE)}
 # Number of fires greater than 10,000 acres and the proportion 
 # Large fire defined as > 10,000 in literature here: (https://fireecology.springeropen.com/articles/10.1186/s42408-021-00110-7)
@@ -886,6 +897,7 @@ summary(fit5)
 ggplotRegression(fit5)
 
 ```
+
 ## Multiple Linear Regression
 
 ```{r, multiple-linear-regression, tidy='styler', tidy.opts=list(strict=FALSE)}
@@ -922,9 +934,10 @@ print(XAREA_BURNED_CA)
 print(XCA_NUM_FIRES)
 print(XCA_NUM_LARGE_FIRES)
 print(XCA_PCT_LARGE_FIRES)
-
 ```
+
 # CA AVG_FIRE_SIZE Prediction
+
 ```{r, fire-size-prediction, tidy='styler', tidy.opts=list(strict=FALSE)}
 # Use 2019 - 2021 ca_SPEI values to predict avg fire size
 ca_fs_spei
