@@ -32,14 +32,31 @@ Richard Railton
 - <a href="#11-descriptive-statistics"
   id="toc-11-descriptive-statistics">11 Descriptive Statistics</a>
   - <a href="#111-histograms" id="toc-111-histograms">11.1 Histograms</a>
-  - <a href="#112-fire-size-and-spei-linear-regression"
-    id="toc-112-fire-size-and-spei-linear-regression">11.2 Fire size and
+  - <a href="#112-boxplots" id="toc-112-boxplots">11.2 Boxplots</a>
+- <a href="#12-visualizations" id="toc-12-visualizations">12
+  Visualizations</a>
+- <a href="#13-correlation-matrix-numeric-attributes"
+  id="toc-13-correlation-matrix-numeric-attributes">13 Correlation Matrix
+  Numeric Attributes</a>
+- <a href="#14-linear-regression" id="toc-14-linear-regression">14 Linear
+  Regression</a>
+  - <a href="#141-fire-size-and-spei-linear-regression"
+    id="toc-141-fire-size-and-spei-linear-regression">14.1 Fire size and
     SPEI Linear Regression</a>
-  - <a href="#113-fire-frequency-and-spei-linear-regression"
-    id="toc-113-fire-frequency-and-spei-linear-regression">11.3 Fire
+  - <a href="#142-fire-frequency-and-spei-linear-regression"
+    id="toc-142-fire-frequency-and-spei-linear-regression">14.2 Fire
     frequency and SPEI Linear Regression</a>
-- <a href="#12-ca-avg_fire_size-prediction"
-  id="toc-12-ca-avg_fire_size-prediction">12 CA AVG_FIRE_SIZE
+  - <a href="#143-fire-area-and-spei-linear-regression"
+    id="toc-143-fire-area-and-spei-linear-regression">14.3 Fire area and
+    SPEI Linear Regression</a>
+  - <a href="#144-large-fires-and-spei-linear-regression"
+    id="toc-144-large-fires-and-spei-linear-regression">14.4 Large Fires and
+    SPEI Linear Regression</a>
+  - <a href="#145-multiple-linear-regression"
+    id="toc-145-multiple-linear-regression">14.5 Multiple Linear
+    Regression</a>
+- <a href="#15-ca-avg_fire_size-prediction"
+  id="toc-15-ca-avg_fire_size-prediction">15 CA AVG_FIRE_SIZE
   Prediction</a>
 
 # 1 Wildfire Data Source Abstract
@@ -1414,7 +1431,8 @@ ggplot(data = fires_new_east, aes(x = DAYS_TO_CONT)) + geom_histogram(bins = 10)
 ```
 
 <img src="us-wildfires-and-drought_files/figure-gfm/histograms-8.png" style="display: block; margin: auto;" />
-\## Boxplots
+
+## 11.2 Boxplots
 
 ``` r
 # Boxplots Fire Size, Days to Containment and SPEI, US and CA
@@ -1508,7 +1526,8 @@ box_SPEI_group
 ```
 
 <img src="us-wildfires-and-drought_files/figure-gfm/boxplots-9.png" style="display: block; margin: auto;" />
-\# Visualizations
+
+# 12 Visualizations
 
 ``` r
 glimpse(fires_new)
@@ -1806,7 +1825,8 @@ fires_new_east %>%
 ```
 
 <img src="us-wildfires-and-drought_files/figure-gfm/fire-causes-12.png" style="display: block; margin: auto;" />
-\# Correlation Matrix Numeric Attributes
+
+# 13 Correlation Matrix Numeric Attributes
 
 ``` r
 # US fires
@@ -1931,9 +1951,10 @@ ggcorrplot(r,
 ```
 
 <img src="us-wildfires-and-drought_files/figure-gfm/correlation-matrix-attributes-4.png" style="display: block; margin: auto;" />
-\# Linear Regression
 
-## 11.2 Fire size and SPEI Linear Regression
+# 14 Linear Regression
+
+## 14.1 Fire size and SPEI Linear Regression
 
 ``` r
 # CA FIRE_SIZE & SPEI
@@ -2138,7 +2159,7 @@ ggplotRegression(fit2)
 # normalization gives same result
 ```
 
-## 11.3 Fire frequency and SPEI Linear Regression
+## 14.2 Fire frequency and SPEI Linear Regression
 
 ``` r
 # CA FIRE_FREQ & SPEI
@@ -2255,7 +2276,8 @@ ggplotRegression(fit3)
 ```
 
 <img src="us-wildfires-and-drought_files/figure-gfm/fire-freq-spei-linear-regression-1.png" style="display: block; margin: auto;" />
-\## Fire area and SPEI Linear Regression
+
+## 14.3 Fire area and SPEI Linear Regression
 
 ``` r
 # CA FIRE_AREA & SPEI
@@ -2372,7 +2394,8 @@ ggplotRegression(fit4)
 ```
 
 <img src="us-wildfires-and-drought_files/figure-gfm/fire-area-spei-linear-regression-1.png" style="display: block; margin: auto;" />
-\## Large Fires and SPEI Linear Regression
+
+## 14.4 Large Fires and SPEI Linear Regression
 
 ``` r
 # Number of fires greater than 10,000 acres and the proportion
@@ -2490,7 +2513,8 @@ ggplotRegression(fit5)
 ```
 
 <img src="us-wildfires-and-drought_files/figure-gfm/fires-large-spei-linear-regression-1.png" style="display: block; margin: auto;" />
-\## Multiple Linear Regression
+
+## 14.5 Multiple Linear Regression
 
 ``` r
 # merge fa,fs,lf
@@ -2692,7 +2716,7 @@ print(XCA_PCT_LARGE_FIRES)
     ## CA_PCT_LARGE_FIRES 
     ##                -22
 
-# 12 CA AVG_FIRE_SIZE Prediction
+# 15 CA AVG_FIRE_SIZE Prediction
 
 ``` r
 # Use 2019 - 2021 ca_SPEI values to predict avg fire size
