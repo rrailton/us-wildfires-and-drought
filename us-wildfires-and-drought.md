@@ -24,9 +24,12 @@ Richard Railton
   - <a href="#54-convert-catagorical-vars-to-factors"
     id="toc-54-convert-catagorical-vars-to-factors">5.4 Convert Catagorical
     Vars to Factors</a>
+  - <a href="#55-special-values-and-outliers"
+    id="toc-55-special-values-and-outliers">5.5 Special Values and
+    Outliers</a>
   - <a
-    href="#55-create-discovery-to-containment-feature-and-resolve-outliers"
-    id="toc-55-create-discovery-to-containment-feature-and-resolve-outliers">5.5
+    href="#56-create-discovery-to-containment-feature-and-resolve-outliers"
+    id="toc-56-create-discovery-to-containment-feature-and-resolve-outliers">5.6
     Create Discovery to Containment Feature and Resolve Outliers</a>
 - <a href="#6-create-subsets-ca-west-east"
   id="toc-6-create-subsets-ca-west-east">6 Create subsets (CA, West,
@@ -49,6 +52,8 @@ Richard Railton
   id="toc-11-descriptive-statistics">11 Descriptive Statistics</a>
   - <a href="#111-histograms" id="toc-111-histograms">11.1 Histograms</a>
     - <a href="#1111-fire-size" id="toc-1111-fire-size">11.1.1 Fire Size</a>
+    - <a href="#1112-days-to-containment"
+      id="toc-1112-days-to-containment">11.1.2 Days to Containment</a>
   - <a href="#112-boxplots" id="toc-112-boxplots">11.2 Boxplots</a>
     - <a href="#1121-us--ca-fire-size" id="toc-1121-us--ca-fire-size">11.2.1
       US &amp; CA Fire Size</a>
@@ -67,12 +72,17 @@ Richard Railton
     Over Time</a>
   - <a href="#122-fires-by-cause" id="toc-122-fires-by-cause">12.2 Fires by
     Cause</a>
-  - <a href="#123-days-to-containment-by-cause"
-    id="toc-123-days-to-containment-by-cause">12.3 Days to Containment by
+  - <a href="#123-fire-size-by-cause" id="toc-123-fire-size-by-cause">12.3
+    Fire Size by Cause</a>
+  - <a href="#124-days-to-containment-by-cause"
+    id="toc-124-days-to-containment-by-cause">12.4 Days to Containment by
     Cause</a>
 - <a href="#13-correlation-matrix" id="toc-13-correlation-matrix">13
   Correlation Matrix</a>
   - <a href="#131-us-fires" id="toc-131-us-fires">13.1 US Fires</a>
+  - <a href="#132-ca-fires" id="toc-132-ca-fires">13.2 CA fires</a>
+  - <a href="#133-west-fires" id="toc-133-west-fires">13.3 West fires</a>
+  - <a href="#134-east-fires" id="toc-134-east-fires">13.4 East fires</a>
 - <a href="#14-linear-regression" id="toc-14-linear-regression">14 Linear
   Regression</a>
   - <a href="#141-california-fire-size-and-spei"
@@ -504,7 +514,7 @@ levels(fires_new$NWCG_GENERAL_CAUSE)
     ## [12] "Recreation and ceremony"                   
     ## [13] "Smoking"
 
-\## Special Values and Outliers
+## 5.5 Special Values and Outliers
 
 ``` r
 # sum number of special values
@@ -654,7 +664,7 @@ cont_future_dates
 fires_new$CONT_DATE[fires_new$CONT_DATE > today()] <- NA
 ```
 
-## 5.5 Create Discovery to Containment Feature and Resolve Outliers
+## 5.6 Create Discovery to Containment Feature and Resolve Outliers
 
 ``` r
 # create new column discovery to containment days
@@ -1442,7 +1452,8 @@ ggplot(data = fires_new_east, aes(x = FIRE_SIZE)) + geom_histogram(bins = 100) +
 ```
 
 <img src="us-wildfires-and-drought_files/figure-gfm/hist-fire-size-4.png" style="display: block; margin: auto;" />
-\### Days to Containment
+
+### 11.1.2 Days to Containment
 
 ``` r
 # us days to containment
@@ -1756,7 +1767,8 @@ fires_new_east %>%
 ```
 
 <img src="us-wildfires-and-drought_files/figure-gfm/bar-fires-by-cause-4.png" style="display: block; margin: auto;" />
-\## Fire Size by Cause
+
+## 12.3 Fire Size by Cause
 
 ``` r
 # US Fire Size by cause
@@ -1826,7 +1838,7 @@ fires_new_east %>%
 
 <img src="us-wildfires-and-drought_files/figure-gfm/bar-fire-size-by-cause-4.png" style="display: block; margin: auto;" />
 
-## 12.3 Days to Containment by Cause
+## 12.4 Days to Containment by Cause
 
 ``` r
 # US Days to cont by cause
@@ -1930,7 +1942,8 @@ ggcorrplot(r,
 ```
 
 <img src="us-wildfires-and-drought_files/figure-gfm/correlation-matrix-us-1.png" style="display: block; margin: auto;" />
-\## CA fires
+
+## 13.2 CA fires
 
 ``` r
 data(fires_new_ca, package = "mosaicData")
@@ -1961,7 +1974,8 @@ ggcorrplot(r,
 ```
 
 <img src="us-wildfires-and-drought_files/figure-gfm/correlation-matrix-ca-1.png" style="display: block; margin: auto;" />
-\## West fires
+
+## 13.3 West fires
 
 ``` r
 data(fires_new_west, package = "mosaicData")
@@ -1992,7 +2006,8 @@ ggcorrplot(r,
 ```
 
 <img src="us-wildfires-and-drought_files/figure-gfm/correlation-matrix-west-1.png" style="display: block; margin: auto;" />
-\## East fires
+
+## 13.4 East fires
 
 ``` r
 data(fires_new_east, package = "mosaicData")

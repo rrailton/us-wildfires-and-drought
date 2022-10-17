@@ -172,7 +172,7 @@ levels(fires_new$NWCG_CAUSE_CLASSIFICATION)
 levels(fires_new$NWCG_GENERAL_CAUSE)
 ```
 
- ## Special Values and Outliers
+## Special Values and Outliers
 
 ```{r, special-values-and-outliers, tidy='styler', tidy.opts=list(strict=FALSE)}
 # sum number of special values
@@ -404,6 +404,7 @@ fancy_scientific <- function(l) {
      parse(text=l)
 }
 ```
+
 ### Fire Size
 
 ```{r, hist-fire-size, tidy='styler', tidy.opts=list(strict=FALSE)}
@@ -439,6 +440,7 @@ ggplot(data = fires_new_east, aes(x = FIRE_SIZE)) + geom_histogram(bins=100) + s
   axis.text.y = element_text(size = 14),
   axis.title.y = element_text(size = 16))
 ```
+
 ### Days to Containment
 
 ```{r, hist-days-to-cont, tidy='styler', tidy.opts=list(strict=FALSE)}
@@ -480,6 +482,7 @@ ggplot(data = fires_new_east, aes(x = DAYS_TO_CONT)) + geom_histogram(bins=10) +
 ## Boxplots
 
 ### US & CA Fire Size
+
 ```{r, boxplot-us-ca-x-labels, tidy='styler', tidy.opts=list(strict=FALSE)}
 # x labels with the number of obs for each group
 # US
@@ -665,6 +668,7 @@ fires_new_east %>%
   axis.text.x = element_text(size = 14),
   axis.text.y = element_text(size = 14))
 ```
+
 ## Fire Size by Cause
 
 ```{r, bar-fire-size-by-cause, tidy='styler', tidy.opts=list(strict=FALSE)}
@@ -792,6 +796,7 @@ ggcorrplot(r,
 hc.order = TRUE,
 type = "lower", lab = TRUE, title = "US Fires Correlation Matrix")
 ```
+
 ## CA fires
 
 ```{r, correlation-matrix-ca, tidy='styler', tidy.opts=list(strict=FALSE)}
@@ -803,6 +808,7 @@ ggcorrplot(r,
 hc.order = TRUE,
 type = "lower", lab = TRUE, title = "CA Fires Correlation Matrix")
 ```
+
 ## West fires
 
 ```{r, correlation-matrix-west, tidy='styler', tidy.opts=list(strict=FALSE)}
@@ -814,6 +820,7 @@ ggcorrplot(r,
 hc.order = TRUE,
 type = "lower", lab = TRUE, title = "West Fires Correlation Matrix")
 ```
+
 ## East fires
 
 ```{r, correlation-matrix-east, tidy='styler', tidy.opts=list(strict=FALSE)}
