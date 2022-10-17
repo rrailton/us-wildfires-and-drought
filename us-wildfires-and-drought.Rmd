@@ -970,7 +970,7 @@ ggplotRegression(fit5)
 
 ```
 
-## California Fires Multiple Linear Regression
+# California Fires - Multiple Linear Regression
 
 ```{r, ca-multiple-linear-regression, tidy='styler', tidy.opts=list(strict=FALSE)}
 # merge fa,fs,lf
@@ -983,11 +983,19 @@ data(ca_combined_SPEI, package = "mosaicData")
 df <- dplyr::select_if(ca_combined_SPEI, is.numeric)
 r <- cor(df, use="complete.obs") 
 round(r,2)
+```
+
+## Correlation Matrix
+
+```{r, ca-multiple-linear-regression-correlation, tidy='styler', tidy.opts=list(strict=FALSE)}
 ggcorrplot(r,
 hc.order = TRUE,
 type = "lower", lab = TRUE)
+```
 
-# Multiple Linear Regression
+## Model
+  
+```{r, ca-multiple-linear-regression-model, tidy='styler', tidy.opts=list(strict=FALSE)}
 model <- lm(CA_5yr_SPEI ~ AVG_FIRE_SIZE_CA + AREA_BURNED_CA + CA_NUM_FIRES + CA_NUM_LARGE_FIRES + CA_PCT_LARGE_FIRES, data = ca_combined_SPEI)
 print(model)
 summary(model)
@@ -1020,14 +1028,22 @@ ca_fs_spei<- ca_fs_spei %>% mutate(AVG_FIRE_SIZE_CA = if_else(Year == 2019, 71, 
 ca_fs_spei<- ca_fs_spei %>% mutate(AVG_FIRE_SIZE_CA = if_else(Year == 2020, 71, AVG_FIRE_SIZE_CA))
 ca_fs_spei<- ca_fs_spei %>% mutate(AVG_FIRE_SIZE_CA = if_else(Year == 2021, 81, AVG_FIRE_SIZE_CA))
 ca_fs_spei
+```
 
+## Scatter Plot with Predicted Values
+
+```{r, ca-fire-size-prediction-scatter, tidy='styler', tidy.opts=list(strict=FALSE)}
 #Scatter plot with predicted values in red
 ca_fs_spei %>% 
   ggplot(aes(x=CA_5yr_SPEI,y=AVG_FIRE_SIZE_CA)) +
   geom_point() +
   geom_point(data=ca_fs_spei[28:30, ], aes(x=CA_5yr_SPEI, y=AVG_FIRE_SIZE_CA), colour="red", size=2) +
   labs(title = 'Scatter Plot with Predicted Average Fire Size Values in Red')
+```
 
+## Bar Graph with Predicted Values
+
+```{r, ca-fire-size-prediction-bar, tidy='styler', tidy.opts=list(strict=FALSE)}
 ca_fs_spei %>% 
     ggplot(aes(x = Year, y = AVG_FIRE_SIZE_CA)) + 
     geom_bar(stat = 'identity', fill = 'grey') +

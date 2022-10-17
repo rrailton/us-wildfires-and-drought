@@ -100,12 +100,21 @@ Richard Railton
   - <a href="#145-california-large-fires-and-spei"
     id="toc-145-california-large-fires-and-spei">14.5 California Large Fires
     and SPEI</a>
-  - <a href="#146-california-fires-multiple-linear-regression"
-    id="toc-146-california-fires-multiple-linear-regression">14.6 California
-    Fires Multiple Linear Regression</a>
-- <a href="#15-california-average-fire-size-prediction"
-  id="toc-15-california-average-fire-size-prediction">15 California
+- <a href="#15-california-fires---multiple-linear-regression"
+  id="toc-15-california-fires---multiple-linear-regression">15 California
+  Fires - Multiple Linear Regression</a>
+  - <a href="#151-correlation-matrix" id="toc-151-correlation-matrix">15.1
+    Correlation Matrix</a>
+  - <a href="#152-model" id="toc-152-model">15.2 Model</a>
+- <a href="#16-california-average-fire-size-prediction"
+  id="toc-16-california-average-fire-size-prediction">16 California
   Average Fire Size Prediction</a>
+  - <a href="#161-scatter-plot-with-predicted-values"
+    id="toc-161-scatter-plot-with-predicted-values">16.1 Scatter Plot with
+    Predicted Values</a>
+  - <a href="#162-bar-graph-with-predicted-values"
+    id="toc-162-bar-graph-with-predicted-values">16.2 Bar Graph with
+    Predicted Values</a>
 
 # 1 Wildfire Data Source Abstract
 
@@ -2603,7 +2612,7 @@ ggplotRegression(fit5)
 
 <img src="us-wildfires-and-drought_files/figure-gfm/ca-large-fires-spei-regression-1.png" style="display: block; margin: auto;" />
 
-## 14.6 California Fires Multiple Linear Regression
+# 15 California Fires - Multiple Linear Regression
 
 ``` r
 # merge fa,fs,lf
@@ -2698,16 +2707,19 @@ round(r, 2)
     ## CA_PCT_LARGE_FIRES               0.96               1.00       -0.26
     ## CA_5yr_SPEI                     -0.21              -0.26        1.00
 
+## 15.1 Correlation Matrix
+
 ``` r
 ggcorrplot(r,
   hc.order = TRUE,
   type = "lower", lab = TRUE)
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/ca-multiple-linear-regression-1.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/ca-multiple-linear-regression-correlation-1.png" style="display: block; margin: auto;" />
+
+## 15.2 Model
 
 ``` r
-# Multiple Linear Regression
 model <- lm(CA_5yr_SPEI ~ AVG_FIRE_SIZE_CA + AREA_BURNED_CA + CA_NUM_FIRES + CA_NUM_LARGE_FIRES + CA_PCT_LARGE_FIRES, data = ca_combined_SPEI)
 print(model)
 ```
@@ -2805,7 +2817,7 @@ print(XCA_PCT_LARGE_FIRES)
     ## CA_PCT_LARGE_FIRES 
     ##                -22
 
-# 15 California Average Fire Size Prediction
+# 16 California Average Fire Size Prediction
 
 ``` r
 # Use 2019 - 2021 ca_SPEI values to predict avg fire size
@@ -2894,6 +2906,8 @@ ca_fs_spei
     ## 29 2020               71       -0.61
     ## 30 2021               81       -1.10
 
+## 16.1 Scatter Plot with Predicted Values
+
 ``` r
 # Scatter plot with predicted values in red
 ca_fs_spei %>%
@@ -2903,7 +2917,9 @@ ca_fs_spei %>%
   labs(title = "Scatter Plot with Predicted Average Fire Size Values in Red")
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/ca-fire-size-prediction-1.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/ca-fire-size-prediction-scatter-1.png" style="display: block; margin: auto;" />
+
+## 16.2 Bar Graph with Predicted Values
 
 ``` r
 ca_fs_spei %>%
@@ -2917,4 +2933,4 @@ ca_fs_spei %>%
     axis.title.y = element_text(size = 16))
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/ca-fire-size-prediction-2.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/ca-fire-size-prediction-bar-1.png" style="display: block; margin: auto;" />
