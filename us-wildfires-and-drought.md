@@ -13,6 +13,21 @@ Richard Railton
 - <a href="#4-count-of-nas" id="toc-4-count-of-nas">4 Count of NAs</a>
 - <a href="#5-transform-fires" id="toc-5-transform-fires">5 Transform
   fires</a>
+  - <a href="#51-select-and-rename-columns-convert-dates-times-and-id"
+    id="toc-51-select-and-rename-columns-convert-dates-times-and-id">5.1
+    Select and Rename Columns, Convert Dates, Times and ID</a>
+  - <a href="#52-add-eastwest-feature-and-remove-non-contiguous-states"
+    id="toc-52-add-eastwest-feature-and-remove-non-contiguous-states">5.2
+    Add East/West Feature and Remove Non-Contiguous States</a>
+  - <a href="#53-check-id-is-unique" id="toc-53-check-id-is-unique">5.3
+    Check ID is Unique</a>
+  - <a href="#54-convert-catagorical-vars-to-factors"
+    id="toc-54-convert-catagorical-vars-to-factors">5.4 Convert Catagorical
+    Vars to Factors</a>
+  - <a
+    href="#55-create-discovery-to-containment-feature-and-resolve-outliers"
+    id="toc-55-create-discovery-to-containment-feature-and-resolve-outliers">5.5
+    Create Discovery to Containment Feature and Resolve Outliers</a>
 - <a href="#6-create-subsets-ca-west-east"
   id="toc-6-create-subsets-ca-west-east">6 Create subsets (CA, West,
   East)</a>
@@ -27,37 +42,60 @@ Richard Railton
   Import CA Drought Indicator Data (5 year SPEI) 1992 - 2021 from CSV</a>
 - <a href="#9-combine-spei-dataframes"
   id="toc-9-combine-spei-dataframes">9 Combine SPEI dataframes</a>
+  - <a href="#91-spei-by-year" id="toc-91-spei-by-year">9.1 SPEI by Year</a>
 - <a href="#10-summarise-datasets" id="toc-10-summarise-datasets">10
   Summarise datasets</a>
 - <a href="#11-descriptive-statistics"
   id="toc-11-descriptive-statistics">11 Descriptive Statistics</a>
   - <a href="#111-histograms" id="toc-111-histograms">11.1 Histograms</a>
+    - <a href="#1111-fire-size" id="toc-1111-fire-size">11.1.1 Fire Size</a>
   - <a href="#112-boxplots" id="toc-112-boxplots">11.2 Boxplots</a>
-- <a href="#12-visualizations" id="toc-12-visualizations">12
-  Visualizations</a>
-- <a href="#13-correlation-matrix-numeric-attributes"
-  id="toc-13-correlation-matrix-numeric-attributes">13 Correlation Matrix
-  Numeric Attributes</a>
+    - <a href="#1121-us--ca-fire-size" id="toc-1121-us--ca-fire-size">11.2.1
+      US &amp; CA Fire Size</a>
+    - <a href="#1122-us--ca-days-to-containment"
+      id="toc-1122-us--ca-days-to-containment">11.2.2 US &amp; CA Days to
+      Containment</a>
+    - <a href="#1123-east--west-fire-size"
+      id="toc-1123-east--west-fire-size">11.2.3 East &amp; West Fire Size</a>
+    - <a href="#1124-east--west-days-to-containment"
+      id="toc-1124-east--west-days-to-containment">11.2.4 East &amp; West Days
+      to Containment</a>
+    - <a href="#1125-us--ca-spei" id="toc-1125-us--ca-spei">11.2.5 US &amp; CA
+      SPEI</a>
+- <a href="#12-bar-graphs" id="toc-12-bar-graphs">12 Bar Graphs</a>
+  - <a href="#121-fires-over-time" id="toc-121-fires-over-time">12.1 Fires
+    Over Time</a>
+  - <a href="#122-fires-by-cause" id="toc-122-fires-by-cause">12.2 Fires by
+    Cause</a>
+  - <a href="#123-days-to-containment-by-cause"
+    id="toc-123-days-to-containment-by-cause">12.3 Days to Containment by
+    Cause</a>
+- <a href="#13-correlation-matrix" id="toc-13-correlation-matrix">13
+  Correlation Matrix</a>
+  - <a href="#131-us-fires" id="toc-131-us-fires">13.1 US Fires</a>
 - <a href="#14-linear-regression" id="toc-14-linear-regression">14 Linear
   Regression</a>
-  - <a href="#141-fire-size-and-spei-linear-regression"
-    id="toc-141-fire-size-and-spei-linear-regression">14.1 Fire size and
-    SPEI Linear Regression</a>
-  - <a href="#142-fire-frequency-and-spei-linear-regression"
-    id="toc-142-fire-frequency-and-spei-linear-regression">14.2 Fire
-    frequency and SPEI Linear Regression</a>
-  - <a href="#143-fire-area-and-spei-linear-regression"
-    id="toc-143-fire-area-and-spei-linear-regression">14.3 Fire area and
-    SPEI Linear Regression</a>
-  - <a href="#144-large-fires-and-spei-linear-regression"
-    id="toc-144-large-fires-and-spei-linear-regression">14.4 Large Fires and
-    SPEI Linear Regression</a>
-  - <a href="#145-multiple-linear-regression"
-    id="toc-145-multiple-linear-regression">14.5 Multiple Linear
-    Regression</a>
-- <a href="#15-ca-avg_fire_size-prediction"
-  id="toc-15-ca-avg_fire_size-prediction">15 CA AVG_FIRE_SIZE
-  Prediction</a>
+  - <a href="#141-california-fire-size-and-spei"
+    id="toc-141-california-fire-size-and-spei">14.1 California Fire size and
+    SPEI</a>
+  - <a href="#142-california-fire-size-normalized"
+    id="toc-142-california-fire-size-normalized">14.2 California Fire Size
+    Normalized</a>
+  - <a href="#143-california-fire-frequency-and-spei"
+    id="toc-143-california-fire-frequency-and-spei">14.3 California Fire
+    Frequency and SPEI</a>
+  - <a href="#144-california-fire-area-and-spei"
+    id="toc-144-california-fire-area-and-spei">14.4 California Fire Area and
+    SPEI</a>
+  - <a href="#145-california-large-fires-and-spei"
+    id="toc-145-california-large-fires-and-spei">14.5 California Large Fires
+    and SPEI</a>
+  - <a href="#146-california-fires-multiple-linear-regression"
+    id="toc-146-california-fires-multiple-linear-regression">14.6 California
+    Fires Multiple Linear Regression</a>
+- <a href="#15-california-average-fire-size-prediction"
+  id="toc-15-california-average-fire-size-prediction">15 California
+  Average Fire Size Prediction</a>
 
 # 1 Wildfire Data Source Abstract
 
@@ -273,6 +311,8 @@ fires_na_count
 
 # 5 Transform fires
 
+## 5.1 Select and Rename Columns, Convert Dates, Times and ID
+
 ``` r
 # select columns we plan on using.
 fires_new <- fires %>% select(FOD_ID, FIRE_YEAR, DISCOVERY_DATE, DISCOVERY_DOY, DISCOVERY_TIME, NWCG_CAUSE_CLASSIFICATION, NWCG_GENERAL_CAUSE, CONT_DATE, CONT_DOY, CONT_TIME, FIRE_SIZE, FIRE_SIZE_CLASS, LATITUDE, LONGITUDE, STATE, FIPS_NAME)
@@ -312,7 +352,11 @@ fires_new$CONT_TIME <- times(sub("(.{2})", "\\1:", sprintf("%04d:00", fires_new$
 
 # convert ID to chr
 fires_new %<>% mutate_at("FOD_ID", as.character)
+```
 
+## 5.2 Add East/West Feature and Remove Non-Contiguous States
+
+``` r
 # check list of states in data
 unique_states <- unique(fires_new$STATE)
 unique_states
@@ -382,6 +426,8 @@ glimpse(fires_new)
     ## $ COUNTY                    <chr> "Plumas County", "Placer County", "El Dorado…
     ## $ REGION                    <chr> "West", "West", "West", "West", "West", "Wes…
 
+## 5.3 Check ID is Unique
+
 ``` r
 # check FOD_ID is unique using unique_id function from https://rdrr.io/github/EdwinTh/thatssorandom/src/R/unique_id.R
 unique_id <- function(x, ...) {
@@ -427,6 +473,8 @@ glimpse(fires_new)
     ## $ COUNTY                    <chr> "Plumas County", "Placer County", "El Dorado…
     ## $ REGION                    <chr> "West", "West", "West", "West", "West", "Wes…
 
+## 5.4 Convert Catagorical Vars to Factors
+
 ``` r
 # convert categorical variables to factors.
 factor_cols <- c("FIRE_YEAR", "DISCOVERY_DOY", "NWCG_CAUSE_CLASSIFICATION", "NWCG_GENERAL_CAUSE", "CONT_DOY", "FIRE_SIZE_CLASS", "STATE", "COUNTY", "REGION")
@@ -455,6 +503,8 @@ levels(fires_new$NWCG_GENERAL_CAUSE)
     ## [11] "Railroad operations and maintenance"       
     ## [12] "Recreation and ceremony"                   
     ## [13] "Smoking"
+
+\## Special Values and Outliers
 
 ``` r
 # sum number of special values
@@ -602,7 +652,11 @@ cont_future_dates
 ``` r
 # replace future cont_date with na
 fires_new$CONT_DATE[fires_new$CONT_DATE > today()] <- NA
+```
 
+## 5.5 Create Discovery to Containment Feature and Resolve Outliers
+
+``` r
 # create new column discovery to containment days
 fires_new$DAYS_TO_CONT <- as.numeric(difftime(fires_new$CONT_DATE, fires_new$DISCOVERY_DATE), units = "days")
 
@@ -1166,12 +1220,14 @@ glimpse(combined_SPEI_group)
     ## $ SPEI     <dbl> -0.29736869, 0.32903045, 0.44245068, 0.74043491, 0.71709022, …
     ## $ Location <fct> US_5yr_SPEI, US_5yr_SPEI, US_5yr_SPEI, US_5yr_SPEI, US_5yr_SP…
 
+## 9.1 SPEI by Year
+
 ``` r
 ggp <- ggplot(combined_SPEI_group, aes(x = Year, y = SPEI, col = Location, group = Location)) + geom_line()
 ggp
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/combine-spei-1.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/spei-by-year-1.png" style="display: block; margin: auto;" />
 
 ``` r
 ggp <- ggplot(combined_SPEI_group, aes(Year, SPEI, fill = Location)) +
@@ -1180,7 +1236,7 @@ ggp <- ggplot(combined_SPEI_group, aes(Year, SPEI, fill = Location)) +
 ggp
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/combine-spei-2.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/spei-by-year-2.png" style="display: block; margin: auto;" />
 
 ``` r
 # Draw plot in different panels
@@ -1319,8 +1375,7 @@ stat.desc(combined_SPEI_num)
 ## 11.1 Histograms
 
 ``` r
-# Histograms
-
+# create function for scientific notation
 # https://stackoverflow.com/questions/11610377/how-do-i-change-the-formatting-of-numbers-on-an-axis-with-ggplot
 fancy_scientific <- function(l) {
   # turn in to character string in scientific notation
@@ -1336,7 +1391,11 @@ fancy_scientific <- function(l) {
   # return this as an expression
   parse(text = l)
 }
+```
 
+### 11.1.1 Fire Size
+
+``` r
 # us fire size
 ggplot(data = fires_new, aes(x = FIRE_SIZE)) + geom_histogram(bins = 100) + scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x), labels = trans_format("log10", math_format(10^.x))) +  scale_y_continuous(labels = fancy_scientific) +  ggtitle("US Fire Size in Acres") + ylab("FREQUENCY") + theme(
   title = element_text(size = 20),
@@ -1346,7 +1405,7 @@ ggplot(data = fires_new, aes(x = FIRE_SIZE)) + geom_histogram(bins = 100) + scal
   axis.title.y = element_text(size = 16))
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/histograms-1.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/hist-fire-size-1.png" style="display: block; margin: auto;" />
 
 ``` r
 # ca fire size
@@ -1358,7 +1417,7 @@ ggplot(data = fires_new_ca, aes(x = FIRE_SIZE)) + geom_histogram(bins = 100) + s
   axis.title.y = element_text(size = 16))
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/histograms-2.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/hist-fire-size-2.png" style="display: block; margin: auto;" />
 
 ``` r
 # west fire size
@@ -1370,7 +1429,7 @@ ggplot(data = fires_new_west, aes(x = FIRE_SIZE)) + geom_histogram(bins = 100) +
   axis.title.y = element_text(size = 16))
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/histograms-3.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/hist-fire-size-3.png" style="display: block; margin: auto;" />
 
 ``` r
 # east fire size
@@ -1382,7 +1441,8 @@ ggplot(data = fires_new_east, aes(x = FIRE_SIZE)) + geom_histogram(bins = 100) +
   axis.title.y = element_text(size = 16))
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/histograms-4.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/hist-fire-size-4.png" style="display: block; margin: auto;" />
+\### Days to Containment
 
 ``` r
 # us days to containment
@@ -1394,7 +1454,7 @@ ggplot(data = fires_new, aes(x = DAYS_TO_CONT)) + geom_histogram(bins = 10) + sc
   axis.title.y = element_text(size = 16))
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/histograms-5.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/hist-days-to-cont-1.png" style="display: block; margin: auto;" />
 
 ``` r
 # ca days to containment
@@ -1406,7 +1466,7 @@ ggplot(data = fires_new_ca, aes(x = DAYS_TO_CONT)) + geom_histogram(bins = 10) +
   axis.title.y = element_text(size = 16))
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/histograms-6.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/hist-days-to-cont-2.png" style="display: block; margin: auto;" />
 
 ``` r
 # west days to containment
@@ -1418,7 +1478,7 @@ ggplot(data = fires_new_west, aes(x = DAYS_TO_CONT)) + geom_histogram(bins = 10)
   axis.title.y = element_text(size = 16))
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/histograms-7.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/hist-days-to-cont-3.png" style="display: block; margin: auto;" />
 
 ``` r
 # East days to containment
@@ -1430,26 +1490,27 @@ ggplot(data = fires_new_east, aes(x = DAYS_TO_CONT)) + geom_histogram(bins = 10)
   axis.title.y = element_text(size = 16))
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/histograms-8.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/hist-days-to-cont-4.png" style="display: block; margin: auto;" />
 
 ## 11.2 Boxplots
 
-``` r
-# Boxplots Fire Size, Days to Containment and SPEI, US and CA
+### 11.2.1 US & CA Fire Size
 
+``` r
 # x labels with the number of obs for each group
 # US
 fire_year_new_xlab <- paste(levels(fires_new$FIRE_YEAR), "\n(N=", table(fires_new$FIRE_YEAR), ")", sep = "")
 # CA
 fire_year_new_ca_xlab <- paste(levels(fires_new_ca$FIRE_YEAR), "\n(N=", table(fires_new_ca$FIRE_YEAR), ")", sep = "")
+```
 
-
+``` r
 # US fireszie
 box_violin_new_fs <- ggplot(data = fires_new, aes(x = FIRE_YEAR, y = FIRE_SIZE)) + stat_boxplot(geom = "errorbar", width = 0.3) + geom_boxplot(varwidth = TRUE, alpha = 1, outlier.shape = 1, outlier.alpha = 0.5) + geom_violin(width = 1.4, alpha = 0.1) + scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x), labels = trans_format("log10", math_format(10^.x))) + stat_summary(fun = mean, geom = "point", shape = 23, size = 3) + scale_x_discrete(labels = fire_year_new_xlab) +  ggtitle("US Fire Size in Acres by Year") + theme(legend.position = "none", plot.title = element_text(size = 22))
 box_violin_new_fs
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/boxplots-1.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/boxplot-us-ca-fire-size-1.png" style="display: block; margin: auto;" />
 
 ``` r
 # CA firesize
@@ -1457,7 +1518,9 @@ box_violin_new_ca_fs <- ggplot(data = fires_new_ca, aes(x = FIRE_YEAR, y = FIRE_
 box_violin_new_ca_fs
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/boxplots-2.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/boxplot-us-ca-fire-size-2.png" style="display: block; margin: auto;" />
+
+### 11.2.2 US & CA Days to Containment
 
 ``` r
 # US days to cont
@@ -1465,7 +1528,7 @@ box_violin_new_dtc <- ggplot(data = fires_new, aes(x = FIRE_YEAR, y = DAYS_TO_CO
 box_violin_new_dtc
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/boxplots-3.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/boxplot-us-ca-days-to-cont-1.png" style="display: block; margin: auto;" />
 
 ``` r
 # CA days to cont
@@ -1473,11 +1536,11 @@ box_violin_new_ca_dtc <- ggplot(data = fires_new_ca, aes(x = FIRE_YEAR, y = DAYS
 box_violin_new_ca_dtc
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/boxplots-4.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/boxplot-us-ca-days-to-cont-2.png" style="display: block; margin: auto;" />
+
+### 11.2.3 East & West Fire Size
 
 ``` r
-# East vs West
-
 # x labels with the number of obs for each group
 # West
 fire_year_west_xlab <- paste(levels(fires_new_west$FIRE_YEAR), "\n(N=", table(fires_new_west$FIRE_YEAR), ")", sep = "")
@@ -1490,7 +1553,7 @@ box_violin_west_fs <- ggplot(data = fires_new_west, aes(x = FIRE_YEAR, y = FIRE_
 box_violin_west_fs
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/boxplots-5.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/boxplot-east-west-fire-size-1.png" style="display: block; margin: auto;" />
 
 ``` r
 # East firesize
@@ -1498,7 +1561,9 @@ box_violin_east_fs <- ggplot(data = fires_new_east, aes(x = FIRE_YEAR, y = FIRE_
 box_violin_east_fs
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/boxplots-6.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/boxplot-east-west-fire-size-2.png" style="display: block; margin: auto;" />
+
+### 11.2.4 East & West Days to Containment
 
 ``` r
 # West days to cont
@@ -1506,7 +1571,7 @@ box_violin_west_dtc <- ggplot(data = fires_new_west, aes(x = FIRE_YEAR, y = DAYS
 box_violin_west_dtc
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/boxplots-7.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/boxplot-east-west-days-to-cont-1.png" style="display: block; margin: auto;" />
 
 ``` r
 # East days to cont
@@ -1514,7 +1579,9 @@ box_violin_east_dtc <- ggplot(data = fires_new_east, aes(x = FIRE_YEAR, y = DAYS
 box_violin_east_dtc
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/boxplots-8.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/boxplot-east-west-days-to-cont-2.png" style="display: block; margin: auto;" />
+
+### 11.2.5 US & CA SPEI
 
 ``` r
 # x labels with the number of obs for each group SPEI
@@ -1525,9 +1592,11 @@ box_SPEI_group <- ggplot(combined_SPEI_group, aes(Location, SPEI)) + stat_boxplo
 box_SPEI_group
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/boxplots-9.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/boxplot-us-ca-spei-1.png" style="display: block; margin: auto;" />
 
-# 12 Visualizations
+# 12 Bar Graphs
+
+## 12.1 Fires Over Time
 
 ``` r
 glimpse(fires_new)
@@ -1555,8 +1624,6 @@ glimpse(fires_new)
     ## $ DAYS_TO_CONT              <dbl> 0, 0, 0, 5, 5, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0,…
 
 ``` r
-# Fires over time
-
 fires_new %>%
   group_by(FIRE_YEAR) %>%
   summarize(n_fires = n()) %>%
@@ -1570,7 +1637,7 @@ fires_new %>%
     axis.title.y = element_text(size = 16))
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/visualizations-1.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/bar-fires-over-time-1.png" style="display: block; margin: auto;" />
 
 ``` r
 fires_new_ca %>%
@@ -1586,7 +1653,7 @@ fires_new_ca %>%
     axis.title.y = element_text(size = 16))
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/visualizations-2.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/bar-fires-over-time-2.png" style="display: block; margin: auto;" />
 
 ``` r
 fires_new_west %>%
@@ -1602,7 +1669,7 @@ fires_new_west %>%
     axis.title.y = element_text(size = 16))
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/visualizations-3.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/bar-fires-over-time-3.png" style="display: block; margin: auto;" />
 
 ``` r
 fires_new_east %>%
@@ -1618,11 +1685,11 @@ fires_new_east %>%
     axis.title.y = element_text(size = 16))
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/visualizations-4.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/bar-fires-over-time-4.png" style="display: block; margin: auto;" />
+
+## 12.2 Fires by Cause
 
 ``` r
-# Fires Causes
-
 # US Fires by cause
 fires_new %>%
   group_by(NWCG_GENERAL_CAUSE) %>%
@@ -1637,7 +1704,7 @@ fires_new %>%
     axis.text.y = element_text(size = 14))
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/fire-causes-1.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/bar-fires-by-cause-1.png" style="display: block; margin: auto;" />
 
 ``` r
 # CA Fires by cause
@@ -1654,7 +1721,7 @@ fires_new_ca %>%
     axis.text.y = element_text(size = 14))
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/fire-causes-2.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/bar-fires-by-cause-2.png" style="display: block; margin: auto;" />
 
 ``` r
 # West Fires by cause
@@ -1671,7 +1738,7 @@ fires_new_west %>%
     axis.text.y = element_text(size = 14))
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/fire-causes-3.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/bar-fires-by-cause-3.png" style="display: block; margin: auto;" />
 
 ``` r
 # East Fires by cause
@@ -1688,7 +1755,8 @@ fires_new_east %>%
     axis.text.y = element_text(size = 14))
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/fire-causes-4.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/bar-fires-by-cause-4.png" style="display: block; margin: auto;" />
+\## Fire Size by Cause
 
 ``` r
 # US Fire Size by cause
@@ -1705,7 +1773,7 @@ fires_new %>%
     axis.text.y = element_text(size = 14))
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/fire-causes-5.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/bar-fire-size-by-cause-1.png" style="display: block; margin: auto;" />
 
 ``` r
 # CA Fire Size by cause
@@ -1722,7 +1790,7 @@ fires_new_ca %>%
     axis.text.y = element_text(size = 14))
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/fire-causes-6.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/bar-fire-size-by-cause-2.png" style="display: block; margin: auto;" />
 
 ``` r
 # West Fire Size by cause
@@ -1739,7 +1807,7 @@ fires_new_west %>%
     axis.text.y = element_text(size = 14))
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/fire-causes-7.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/bar-fire-size-by-cause-3.png" style="display: block; margin: auto;" />
 
 ``` r
 # East Fire Size by cause
@@ -1756,7 +1824,9 @@ fires_new_east %>%
     axis.text.y = element_text(size = 14))
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/fire-causes-8.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/bar-fire-size-by-cause-4.png" style="display: block; margin: auto;" />
+
+## 12.3 Days to Containment by Cause
 
 ``` r
 # US Days to cont by cause
@@ -1773,7 +1843,7 @@ fires_new %>%
     axis.text.y = element_text(size = 14))
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/fire-causes-9.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/bar-days-to-cont-by-cause-1.png" style="display: block; margin: auto;" />
 
 ``` r
 # CA Days to cont by cause
@@ -1790,7 +1860,7 @@ fires_new_ca %>%
     axis.text.y = element_text(size = 14))
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/fire-causes-10.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/bar-days-to-cont-by-cause-2.png" style="display: block; margin: auto;" />
 
 ``` r
 # West Days to cont by cause
@@ -1807,7 +1877,7 @@ fires_new_west %>%
     axis.text.y = element_text(size = 14))
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/fire-causes-11.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/bar-days-to-cont-by-cause-3.png" style="display: block; margin: auto;" />
 
 ``` r
 # East Days to cont by cause
@@ -1824,9 +1894,11 @@ fires_new_east %>%
     axis.text.y = element_text(size = 14))
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/fire-causes-12.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/bar-days-to-cont-by-cause-4.png" style="display: block; margin: auto;" />
 
-# 13 Correlation Matrix Numeric Attributes
+# 13 Correlation Matrix
+
+## 13.1 US Fires
 
 ``` r
 # US fires
@@ -1854,13 +1926,13 @@ round(r, 2)
 ``` r
 ggcorrplot(r,
   hc.order = TRUE,
-  type = "lower", lab = TRUE)
+  type = "lower", lab = TRUE, title = "US Fires Correlation Matrix")
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/correlation-matrix-attributes-1.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/correlation-matrix-us-1.png" style="display: block; margin: auto;" />
+\## CA fires
 
 ``` r
-# CA fires
 data(fires_new_ca, package = "mosaicData")
 df <- dplyr::select_if(fires_new_ca, is.numeric)
 r <- cor(df, use = "complete.obs")
@@ -1885,13 +1957,13 @@ round(r, 2)
 ``` r
 ggcorrplot(r,
   hc.order = TRUE,
-  type = "lower", lab = TRUE)
+  type = "lower", lab = TRUE, title = "CA Fires Correlation Matrix")
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/correlation-matrix-attributes-2.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/correlation-matrix-ca-1.png" style="display: block; margin: auto;" />
+\## West fires
 
 ``` r
-# West fires
 data(fires_new_west, package = "mosaicData")
 df <- dplyr::select_if(fires_new_west, is.numeric)
 r <- cor(df, use = "complete.obs")
@@ -1916,13 +1988,13 @@ round(r, 2)
 ``` r
 ggcorrplot(r,
   hc.order = TRUE,
-  type = "lower", lab = TRUE)
+  type = "lower", lab = TRUE, title = "West Fires Correlation Matrix")
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/correlation-matrix-attributes-3.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/correlation-matrix-west-1.png" style="display: block; margin: auto;" />
+\## East fires
 
 ``` r
-# East fires
 data(fires_new_east, package = "mosaicData")
 df <- dplyr::select_if(fires_new_east, is.numeric)
 r <- cor(df, use = "complete.obs")
@@ -1947,14 +2019,14 @@ round(r, 2)
 ``` r
 ggcorrplot(r,
   hc.order = TRUE,
-  type = "lower", lab = TRUE)
+  type = "lower", lab = TRUE, title = "East Fires Correlation Matrix")
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/correlation-matrix-attributes-4.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/correlation-matrix-east-1.png" style="display: block; margin: auto;" />
 
 # 14 Linear Regression
 
-## 14.1 Fire size and SPEI Linear Regression
+## 14.1 California Fire size and SPEI
 
 ``` r
 # CA FIRE_SIZE & SPEI
@@ -2084,7 +2156,9 @@ ggplotRegression <- function(fit) {
 ggplotRegression(fit1)
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/fire-size-spei-linear-regression-1.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/fire-size-spei-regression-1.png" style="display: block; margin: auto;" />
+
+## 14.2 California Fire Size Normalized
 
 ``` r
 # normalize FIRE_SIZE_CA
@@ -2153,13 +2227,13 @@ summary(fit2)
 ggplotRegression(fit2)
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/fire-size-spei-linear-regression-2.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/fire-size-spei-regression-normalize-1.png" style="display: block; margin: auto;" />
 
 ``` r
 # normalization gives same result
 ```
 
-## 14.2 Fire frequency and SPEI Linear Regression
+## 14.3 California Fire Frequency and SPEI
 
 ``` r
 # CA FIRE_FREQ & SPEI
@@ -2275,9 +2349,9 @@ summary(fit3)
 ggplotRegression(fit3)
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/fire-freq-spei-linear-regression-1.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/ca-fire-freq-spei-regression-1.png" style="display: block; margin: auto;" />
 
-## 14.3 Fire area and SPEI Linear Regression
+## 14.4 California Fire Area and SPEI
 
 ``` r
 # CA FIRE_AREA & SPEI
@@ -2393,9 +2467,9 @@ summary(fit4)
 ggplotRegression(fit4)
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/fire-area-spei-linear-regression-1.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/ca-fire-area-spei-regression-1.png" style="display: block; margin: auto;" />
 
-## 14.4 Large Fires and SPEI Linear Regression
+## 14.5 California Large Fires and SPEI
 
 ``` r
 # Number of fires greater than 10,000 acres and the proportion
@@ -2512,9 +2586,9 @@ summary(fit5)
 ggplotRegression(fit5)
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/fires-large-spei-linear-regression-1.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/ca-large-fires-spei-regression-1.png" style="display: block; margin: auto;" />
 
-## 14.5 Multiple Linear Regression
+## 14.6 California Fires Multiple Linear Regression
 
 ``` r
 # merge fa,fs,lf
@@ -2615,7 +2689,7 @@ ggcorrplot(r,
   type = "lower", lab = TRUE)
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/multiple-linear-regression-1.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/ca-multiple-linear-regression-1.png" style="display: block; margin: auto;" />
 
 ``` r
 # Multiple Linear Regression
@@ -2716,7 +2790,7 @@ print(XCA_PCT_LARGE_FIRES)
     ## CA_PCT_LARGE_FIRES 
     ##                -22
 
-# 15 CA AVG_FIRE_SIZE Prediction
+# 15 California Average Fire Size Prediction
 
 ``` r
 # Use 2019 - 2021 ca_SPEI values to predict avg fire size
@@ -2814,7 +2888,7 @@ ca_fs_spei %>%
   labs(title = "Scatter Plot with Predicted Average Fire Size Values in Red")
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/fire-size-prediction-1.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/ca-fire-size-prediction-1.png" style="display: block; margin: auto;" />
 
 ``` r
 ca_fs_spei %>%
@@ -2828,4 +2902,4 @@ ca_fs_spei %>%
     axis.title.y = element_text(size = 16))
 ```
 
-<img src="us-wildfires-and-drought_files/figure-gfm/fire-size-prediction-2.png" style="display: block; margin: auto;" />
+<img src="us-wildfires-and-drought_files/figure-gfm/ca-fire-size-prediction-2.png" style="display: block; margin: auto;" />
